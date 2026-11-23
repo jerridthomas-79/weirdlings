@@ -12,10 +12,10 @@
   <title>Weirdlings</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-180.png">
-  <link rel="manifest" href="manifest.json?v=13">
-  <link rel="preload" href="assets/bg.jpg?v=13" as="image">
+  <link rel="manifest" href="manifest.json?v=14">
+  <link rel="preload" href="assets/bg.jpg?v=14" as="image">
   <link rel="preload" href="assets/logo.webp" as="image" type="image/webp">
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=14">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute">
@@ -36,7 +36,10 @@
     <div class="home-hero">
       <h1 class="logo-wrap"><picture><source srcset="assets/logo.webp" type="image/webp"><img class="logo-img" src="assets/logo.png" alt="Weirdlings"></picture></h1>
       <p class="tagline">a cozy little logic puzzle</p>
-      <div class="home-grid" id="home-grid"></div>
+      <div class="home-stage">
+        <div class="home-grid" id="home-grid"></div>
+        <img class="hero-toad" src="assets/toad.webp?v=14" alt="Weirdlings mushroom toad">
+      </div>
     </div>
     <div class="home-actions">
       <button class="big-btn play-btn" id="btn-play">
@@ -123,8 +126,8 @@
     </div>
   </div>
 
-  <script src="puzzle.js?v=13"></script>
-  <script src="creatures.js?v=13"></script>
-  <script src="game.js?v=13"></script>
+  <script src="puzzle.js?v=14"></script>
+  <script src="creatures.js?v=14"></script>
+  <script src="game.js?v=14"></script>
 </body>
 </html>
