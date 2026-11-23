@@ -88,12 +88,13 @@ h1 {
   width: var(--board-size);
   height: var(--board-size);
   display: grid;
-  border: 4px solid var(--ink);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 10px 0 rgba(0,0,0,.25), 0 18px 40px rgba(0,0,0,.4);
+  --gap: max(2px, calc(var(--board-size) / var(--n) * 0.075));
+  gap: var(--gap);
+  padding: calc(var(--gap) * 1.6);
+  border-radius: calc(var(--gap) * 2 + 14px);
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(0,0,0,.35);
   touch-action: none;
-  background: var(--ink);
 }
 .board.shake { animation: shake .4s; }
 @keyframes shake {
@@ -106,17 +107,17 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-style: solid;
-  border-color: var(--ink);
+  border-radius: calc(var(--board-size) / var(--n) * 0.12);
   cursor: pointer;
-  transition: filter .15s;
+  transition: filter .15s, background-color .2s;
+  min-width: 0;
+  min-height: 0;
 }
 .cell.hover { filter: brightness(.94); }
 .cell .mark {
-  font-size: calc(var(--board-size) / var(--n) * .38);
-  color: rgba(43,35,64,.5);
-  font-weight: 900;
-  line-height: 1;
+  width: 62%;
+  height: 62%;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.12));
   animation: markin .15s ease-out;
 }
 @keyframes markin { from { transform: scale(.3); opacity: 0; } }

@@ -1,19 +1,20 @@
 // Original Weirdling creature art, drawn as inline SVG.
 (function (root) {
+  // tile = square color, light = square behind a placed weirdling, body = creature
   const REGION_COLORS = [
-    { bg: "#FFD6E0", body: "#FF5C8A" }, // pink
-    { bg: "#FFE4B5", body: "#FF9A1F" }, // orange
-    { bg: "#FFF4A3", body: "#E8C000" }, // yellow
-    { bg: "#CFF2C6", body: "#38B84A" }, // green
-    { bg: "#C4ECF4", body: "#16A9C7" }, // teal
-    { bg: "#D3DCFF", body: "#4C68F5" }, // blue
-    { bg: "#E7D5FF", body: "#9656F5" }, // purple
-    { bg: "#F7D3C3", body: "#D65F33" }, // rust
-    { bg: "#DCE2E8", body: "#66798A" }, // slate
-    { bg: "#FFB8B8", body: "#E53935" }, // red
-    { bg: "#E6F5A6", body: "#86BD12" }, // lime
-    { bg: "#E6D5C0", body: "#9C6B3F" }, // brown
-    { bg: "#F7C8EF", body: "#D13ABD" }, // magenta
+    { tile: "#F5A3C0", light: "#FDE3EC", body: "#FF5C8A" }, // pink
+    { tile: "#FDAA6B", light: "#FFE6D1", body: "#FF8A1F" }, // orange
+    { tile: "#E5B94A", light: "#FBEFC9", body: "#E0A800" }, // mustard
+    { tile: "#7CCB6B", light: "#DDF3D6", body: "#38A84A" }, // green
+    { tile: "#4AB8B4", light: "#D3F0EF", body: "#129C97" }, // teal
+    { tile: "#6CBAE8", light: "#DCEFFA", body: "#2F8FD6" }, // blue
+    { tile: "#9B7EDB", light: "#E7DFF8", body: "#7A4FE0" }, // purple
+    { tile: "#B07350", light: "#EEDCCF", body: "#9A5A33" }, // brown
+    { tile: "#A8BCD6", light: "#E7EDF5", body: "#5F7896" }, // slate
+    { tile: "#E8635F", light: "#FADAD9", body: "#D9302B" }, // red
+    { tile: "#B9D454", light: "#EFF6D2", body: "#86B012" }, // lime
+    { tile: "#E486BE", light: "#F8DDEE", body: "#C93AA6" }, // magenta
+    { tile: "#D4B89A", light: "#F4EBE1", body: "#A97E54" }, // sand
   ];
 
   const INK = "#2B2340";

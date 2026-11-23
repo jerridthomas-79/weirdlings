@@ -113,6 +113,8 @@
     return bank[bankPick(lv).idx].n;
   }
 
+  const X_SVG = `<svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><path d="M27 27 L73 73 M73 27 L27 73" stroke="#fff" stroke-width="15" stroke-linecap="round"/></svg>`;
+
   // ---------- state ----------
   let level, puzzle, n, cells, hearts, hints, history, startTime, elapsed, finished, timerId;
   let cellEls = [];
@@ -156,17 +158,7 @@
       el.className = "cell";
       el.dataset.i = i;
       el.setAttribute("role", "gridcell");
-      const g = regionAt(i);
-      el.style.background = REGION_COLORS[g].bg;
-      const thick = n >= 10 ? "2px" : "3px", thin = "1px";
-      const topDiff = r > 0 && regionAt(i - n) !== g;
-      const leftDiff = c > 0 && regionAt(i - 1) !== g;
-      el.style.borderTopWidth = r === 0 ? "0" : topDiff ? thick : thin;
-      el.style.borderLeftWidth = c === 0 ? "0" : leftDiff ? thick : thin;
-      el.style.borderRightWidth = "0";
-      el.style.borderBottomWidth = "0";
-      el.style.borderTopColor = topDiff ? "var(--ink)" : "rgba(43,35,64,.14)";
-      el.style.borderLeftColor = leftDiff ? "var(--ink)" : "rgba(43,35,64,.14)";
+      el.style.background = REGION_COLORS[regionAt(i)].tile;
       boardEl.appendChild(el);
       cellEls.push(el);
     }
@@ -175,8 +167,10 @@
   function renderCell(i) {
     const el = cellEls[i];
     const s = cells[i];
+    const col = REGION_COLORS[regionAt(i)];
+    el.style.background = s === 2 ? col.light : col.tile;
     if (s === 0) el.innerHTML = "";
-    else if (s === 1) el.innerHTML = `<span class="mark">✕</span>`;
+    else if (s === 1) el.innerHTML = X_SVG;
     else el.innerHTML = creatureSVG(regionAt(i));
     el.setAttribute("aria-label", s === 2 ? "weirdling" : s === 1 ? "marked" : "empty");
   }
