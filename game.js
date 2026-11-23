@@ -14,9 +14,9 @@
   function loadSave() {
     try {
       const s = JSON.parse(localStorage.getItem(STORE_KEY));
-      if (s && s.unlocked) return s;
+      if (s && s.unlocked) { if (s.haptics === undefined) s.haptics = true; return s; }
     } catch (e) {}
-    return { unlocked: 1, current: 1, done: {}, best: {}, sound: true, seenHelp: false };
+    return { unlocked: 1, current: 1, done: {}, best: {}, sound: true, haptics: true, seenHelp: false };
   }
   function writeSave() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(save)); } catch (e) {}
@@ -41,6 +41,40 @@
       o.stop(t + dur);
     } catch (e) {}
   }
+  // ---------- haptics ----------
+  // Android: real vibration. iPhone (iOS 18+): Safari has no vibration API,
+  // but toggling a hidden "switch" checkbox makes the phone give a haptic tick.
+  const haptic = (() => {
+    const canVibrate = typeof navigator.vibrate === "function";
+    let label = null;
+    function tick() {
+      try {
+        if (!label) {
+          label = document.createElement("label");
+          label.setAttribute("aria-hidden", "true");
+          label.style.display = "none";
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.setAttribute("switch", "");
+          label.appendChild(input);
+          document.body.appendChild(label);
+        }
+        label.click();
+      } catch (e) {}
+    }
+    function pattern(ms, ticks) {
+      if (!save.haptics) return;
+      if (canVibrate) { try { navigator.vibrate(ms); } catch (e) {} return; }
+      tick();
+      for (let k = 1; k < ticks; k++) setTimeout(tick, k * 70);
+    }
+    return {
+      light: () => pattern(12, 1),          // one tap: mark X / drag over a square
+      strong: () => pattern(45, 2),         // double tap: place a weirdling
+      error: () => pattern([60, 50, 60], 3) // wrong guess
+    };
+  })();
+
   const sfx = {
     mark: () => tone(880, 0.06, "triangle", 0.06),
     place: () => { tone(520, 0.12, "sine"); tone(780, 0.18, "sine", 0.12, 0.08); },
@@ -225,11 +259,13 @@
     if (isCorrect(i)) {
       setCells([{ i, next: 2 }]);
       sfx.place();
+      haptic.strong();
       checkWin();
     } else {
       // wrong guess: lose a heart, mark the square as ruled out
       hearts--;
       sfx.wrong();
+      haptic.error();
       cells[i] = 2;
       renderCell(i);
       const el = cellEls[i];
@@ -241,7 +277,6 @@
       void boardEl.offsetWidth;
       boardEl.classList.add("shake");
       renderHearts(hearts);
-      if (navigator.vibrate) navigator.vibrate(120);
       setTimeout(() => {
         el.classList.remove("wrong");
         cells[i] = 1;
@@ -257,7 +292,7 @@
   function tap(i) {
     if (finished) return;
     const s = cells[i];
-    if (s === 0) { setCells([{ i, next: 1 }]); sfx.mark(); }
+    if (s === 0) { setCells([{ i, next: 1 }]); sfx.mark(); haptic.light(); }
     else if (s === 1) tryPlace(i);
     // placed weirdlings stay put
   }
@@ -382,6 +417,7 @@
     cells[i] = to;
     renderCell(i);
     sfx.mark();
+    haptic.light();
   }
   function endDrag() {
     if (!drag) return;
@@ -477,7 +513,7 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=5")
+  fetch("boards.json?v=6")
     .then((r) => r.json())
     .then((data) => {
       bank = data;
