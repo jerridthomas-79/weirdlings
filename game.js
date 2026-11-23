@@ -230,8 +230,9 @@
     const s = Math.floor(ms / 1000);
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
   }
+  let paused = false;
   function updateTimer() {
-    if (!finished) elapsed = Date.now() - startTime;
+    if (!finished && !paused) elapsed = Date.now() - startTime;
     $("timer").textContent = "⏱ " + fmtTime(elapsed);
   }
 
@@ -358,6 +359,7 @@
     const isBest = !prevBest || elapsed < prevBest;
     if (isBest) save.best[level] = elapsed;
     save.unlocked = Math.max(save.unlocked, level + 1);
+    save.current = level + 1; // Play on the home screen goes to the next level
     writeSave();
     setTimeout(() => {
       const parade = $("win-parade");
@@ -496,9 +498,9 @@
       const b = document.createElement("button");
       b.innerHTML = `${lv}<small>${sizeForLevel(lv)}×${sizeForLevel(lv)}</small>`;
       if (save.done[lv]) b.classList.add("done");
-      if (lv === level) b.classList.add("current");
+      if (lv === Math.min(save.current || 1, save.unlocked)) b.classList.add("current");
       b.disabled = lv > save.unlocked;
-      b.addEventListener("click", () => { closeModal("modal-levels"); startLevel(lv); });
+      b.addEventListener("click", () => { closeModal("modal-levels"); showGame(lv); });
       grid.appendChild(b);
     }
     openModal("modal-levels");
@@ -510,11 +512,76 @@
   $("btn-hint").addEventListener("click", hint);
   $("btn-restart").addEventListener("click", () => startLevel(level));
   $("btn-help").addEventListener("click", showHelp);
-  $("btn-levels").addEventListener("click", showLevels);
+  // ---------- home screen ----------
+  function buildHomeGrid() {
+    // a little 3x3 sample board with weirdlings and X marks
+    const picks = shuffled(REGION_COLORS.length, mulberry32(Date.now() % 100000)).slice(0, 3);
+    const layout = [0, 0, 1, 2, 0, 1, 2, 2, 1];
+    const show = { 1: "w", 3: "x", 4: "x", 6: "w", 8: "w", 0: "x", 2: "x" };
+    const grid = $("home-grid");
+    grid.innerHTML = "";
+    layout.forEach((g, k) => {
+      const c = picks[g];
+      const t = document.createElement("div");
+      t.className = "tile";
+      t.style.background = REGION_COLORS[c].tile;
+      if (show[k] === "w") t.innerHTML = creatureSVG(c);
+      else if (show[k] === "x") t.innerHTML = X_SVG;
+      const w = t.querySelector(".weirdling");
+      if (w) w.style.animationDelay = (k * 0.17) + "s";
+      grid.appendChild(t);
+    });
+  }
+
+  function refreshHome() {
+    const lv = Math.min(save.current || 1, save.unlocked);
+    const inProgress = puzzle && level === lv && !finished && cells.some((s) => s !== 0);
+    $("play-label").textContent = inProgress ? "Continue" : "Play";
+    const n = sizeForLevel(lv);
+    $("play-sub").textContent = `Level ${lv} · ${n}×${n}`;
+    const solved = Object.keys(save.done).length;
+    $("home-stats").textContent = solved ? `${solved} puzzle${solved === 1 ? "" : "s"} solved` : "";
+  }
+
+  function showHome() {
+    if (puzzle && !finished && !paused) { paused = true; updateTimer(); }
+    ["modal-win", "modal-lose", "modal-help", "modal-levels"].forEach(closeModal);
+    $("app").hidden = true;
+    $("home").hidden = false;
+    buildHomeGrid();
+    refreshHome();
+  }
+
+  function showGame(lv) {
+    $("home").hidden = true;
+    $("app").hidden = false;
+    if (lv !== undefined && (lv !== level || finished || !puzzle)) {
+      paused = false;
+      startLevel(lv);
+    } else if (paused) {
+      paused = false;
+      startTime = Date.now() - elapsed; // resume timer where it left off
+    }
+    if (!save.seenHelp) {
+      save.seenHelp = true;
+      writeSave();
+      showHelp();
+    }
+  }
+
+  $("btn-play").addEventListener("click", () => showGame(Math.min(save.current || 1, save.unlocked)));
+  $("btn-home-levels").addEventListener("click", showLevels);
+  $("btn-home-help").addEventListener("click", showHelp);
+  $("btn-home").addEventListener("click", showHome);
+  document.querySelectorAll("[data-home]").forEach((b) => b.addEventListener("click", showHome));
+  const hapticsBtn = $("btn-haptics");
+  function renderHaptics() { hapticsBtn.classList.toggle("off", !save.haptics); }
+  hapticsBtn.addEventListener("click", () => { save.haptics = !save.haptics; writeSave(); renderHaptics(); haptic.light(); });
+  renderHaptics();
   $("btn-next").addEventListener("click", () => { closeModal("modal-win"); startLevel(level + 1); });
   $("btn-retry").addEventListener("click", () => { closeModal("modal-lose"); startLevel(level); });
   const soundBtn = $("btn-sound");
-  function renderSound() { soundBtn.textContent = save.sound ? "🔊" : "🔇"; }
+  function renderSound() { soundBtn.textContent = save.sound ? "🔊" : "🔇"; soundBtn.classList.toggle("off", !save.sound); }
   soundBtn.addEventListener("click", () => { save.sound = !save.sound; writeSave(); renderSound(); });
   renderSound();
 
@@ -522,18 +589,14 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=8")
+  fetch("boards.json?v=9")
     .then((r) => r.json())
     .then((data) => {
       bank = data;
-      startLevel(Math.min(save.current || 1, save.unlocked));
-      if (!save.seenHelp) {
-        save.seenHelp = true;
-        writeSave();
-        showHelp();
-      }
+      showHome();
     })
     .catch(() => {
-      boardEl.outerHTML = `<p style="text-align:center">Couldn't load the puzzles. Check your connection and refresh.</p>`;
+      $("home-stats").textContent = "Couldn't load the puzzles. Check your connection and refresh.";
+      $("btn-play").disabled = true;
     });
 })();

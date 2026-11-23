@@ -12,8 +12,8 @@
   <title>Weirdlings</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-180.png">
-  <link rel="manifest" href="manifest.json?v=8">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="manifest" href="manifest.json?v=9">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute">
@@ -25,14 +25,38 @@
     </defs>
   </svg>
 
-  <div id="app">
+  <!-- Home screen -->
+  <section id="home">
+    <div class="home-top">
+      <button class="icon-btn" id="btn-sound" aria-label="Toggle sound">🔊</button>
+      <button class="icon-btn" id="btn-haptics" aria-label="Toggle vibration">📳</button>
+    </div>
+    <div class="home-hero">
+      <h1 class="logo">Weirdlings</h1>
+      <p class="tagline">a cozy little logic puzzle</p>
+      <div class="home-grid" id="home-grid"></div>
+    </div>
+    <div class="home-actions">
+      <button class="big-btn play-btn" id="btn-play">
+        <span id="play-label">Play</span>
+        <small id="play-sub">Level 1 · 5×5</small>
+      </button>
+      <div class="home-row">
+        <button class="big-btn ghost" id="btn-home-levels">Levels</button>
+        <button class="big-btn ghost" id="btn-home-help">How to play</button>
+      </div>
+      <p class="home-stats" id="home-stats"></p>
+    </div>
+  </section>
+
+  <div id="app" hidden>
     <header class="top">
-      <button class="icon-btn" id="btn-levels" aria-label="Choose level">☰</button>
+      <button class="icon-btn" id="btn-home" aria-label="Back to home">←</button>
       <div class="title-block">
         <h1>Weirdlings</h1>
         <div class="level-label" id="level-label">Level 1</div>
       </div>
-      <button class="icon-btn" id="btn-sound" aria-label="Toggle sound">🔊</button>
+      <span class="icon-btn spacer" aria-hidden="true"></span>
     </header>
 
     <div class="status">
@@ -75,6 +99,7 @@
       <h2 id="win-title">Puzzle solved!</h2>
       <p id="win-stats"></p>
       <button class="big-btn" id="btn-next">Next level →</button>
+      <button class="big-btn ghost" data-home>Home</button>
     </div>
   </div>
 
@@ -84,6 +109,7 @@
       <h2>Out of hearts</h2>
       <p>The weirdlings got grumpy. Give it another go!</p>
       <button class="big-btn" id="btn-retry">Try again</button>
+      <button class="big-btn ghost" data-home>Home</button>
     </div>
   </div>
 
@@ -95,8 +121,8 @@
     </div>
   </div>
 
-  <script src="puzzle.js?v=8"></script>
-  <script src="creatures.js?v=8"></script>
-  <script src="game.js?v=8"></script>
+  <script src="puzzle.js?v=9"></script>
+  <script src="creatures.js?v=9"></script>
+  <script src="game.js?v=9"></script>
 </body>
 </html>

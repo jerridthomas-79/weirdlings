@@ -147,6 +147,48 @@ h1 {
 .board.won .weirdling { animation: dance .8s ease-in-out infinite alternate; }
 @keyframes dance { from { transform: translateY(0) rotate(-6deg); } to { transform: translateY(-12%) rotate(6deg); } }
 
+/* ---------- Home screen ---------- */
+#home {
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(env(safe-area-inset-top) + 8px) 20px calc(env(safe-area-inset-bottom) + 18px);
+}
+#home[hidden], #app[hidden] { display: none; }
+.home-top { width: 100%; max-width: 480px; display: flex; justify-content: flex-end; gap: 8px; }
+.home-hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+.logo { font-size: clamp(44px, 14vw, 64px); }
+.tagline { margin: 0 0 18px; opacity: .75; font-weight: 700; }
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 12px;
+  background: #fff;
+  border-radius: 26px;
+  width: min(72vw, 300px);
+  aspect-ratio: 1;
+  box-shadow: 0 12px 30px rgba(0,0,0,.35);
+  transform: rotate(-3deg);
+}
+.home-grid .tile {
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.home-grid .tile svg.weirdling { width: 80%; height: 80%; overflow: visible; animation: dance .9s ease-in-out infinite alternate; }
+.home-grid .tile svg.mark { width: 55%; height: 55%; }
+.home-actions { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 10px; }
+.home-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.home-row .big-btn { font-size: 16px; margin: 0; }
+.play-btn { font-size: 26px; padding: 14px; display: flex; flex-direction: column; align-items: center; line-height: 1.15; }
+.play-btn small { font-size: 14px; font-weight: 700; opacity: .85; }
+.home-stats { text-align: center; margin: 4px 0 0; font-size: 14px; opacity: .7; font-weight: 700; }
+.icon-btn.spacer { visibility: hidden; }
+.icon-btn.off { opacity: .45; }
+.card .big-btn + .big-btn { margin-top: 12px; }
+
 .tip { margin: 2px 0 0; font-size: 13px; opacity: .65; text-align: center; }
 
 .tools {
