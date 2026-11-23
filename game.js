@@ -203,7 +203,7 @@
     const el = cellEls[i];
     const s = cells[i];
     const col = REGION_COLORS[regionAt(i)];
-    el.style.background = s === 2 ? col.light : col.tile;
+    el.style.background = col.tile; // keep the patch color, even under a weirdling
     if (s === 0) el.innerHTML = "";
     else if (s === 1) el.innerHTML = X_SVG;
     else el.innerHTML = creatureSVG(regionAt(i));
@@ -522,7 +522,7 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=7")
+  fetch("boards.json?v=8")
     .then((r) => r.json())
     .then((data) => {
       bank = data;
