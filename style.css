@@ -12,6 +12,9 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+html, body, button, .cell, .modal, .card {
+  touch-action: manipulation;      /* no double-tap zoom anywhere */
+}
 html, body {
   margin: 0;
   height: 100%;

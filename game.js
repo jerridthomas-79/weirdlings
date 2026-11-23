@@ -399,6 +399,16 @@
   document.addEventListener("dblclick", (e) => e.preventDefault(), { passive: false });
   ["gesturestart", "gesturechange", "gestureend"].forEach((t) =>
     document.addEventListener(t, (e) => e.preventDefault(), { passive: false }));
+  // two-finger pinch anywhere on the page
+  ["touchstart", "touchmove"].forEach((t) =>
+    document.addEventListener(t, (e) => {
+      if (e.touches.length > 1 || (e.scale !== undefined && e.scale !== 1)) e.preventDefault();
+    }, { passive: false }));
+  // trackpad / ctrl+scroll and ctrl +/- zoom on computers
+  window.addEventListener("wheel", (e) => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && ["+", "-", "=", "0"].includes(e.key)) e.preventDefault();
+  });
   let lastTouchEnd = 0;
   document.addEventListener("touchend", (e) => {
     const now = Date.now();
@@ -467,7 +477,7 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json")
+  fetch("boards.json?v=5")
     .then((r) => r.json())
     .then((data) => {
       bank = data;
