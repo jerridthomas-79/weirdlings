@@ -33,7 +33,7 @@ html, body {
 body {
   position: fixed; inset: 0;
   /* cave background, shown behind every page */
-  background: var(--bg2) url("assets/bg.jpg?v=14") center / cover no-repeat;
+  background: var(--bg2) url("assets/bg.jpg?v=15") center / cover no-repeat;
 } /* stop the page bouncing/scrolling */
 
 #app {
@@ -225,7 +225,7 @@ h1 {
   border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
 }
-.home-grid .tile svg.weirdling { width: 80%; height: 80%; overflow: visible; animation: dance .9s ease-in-out infinite alternate; }
+.home-grid .tile .weirdling { width: 80%; height: 80%; overflow: visible; animation: dance .9s ease-in-out infinite alternate; }
 .home-grid .tile svg.mark { width: 55%; height: 55%; }
 .home-actions { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 10px; }
 .home-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -316,10 +316,13 @@ h1 {
 .big-btn.ghost { background: #e9dfcf; color: var(--ink); box-shadow: 0 5px 0 #c9bba5; }
 
 .rules-demo, .win-parade, .lose-face { display: flex; justify-content: center; gap: 4px; }
-.rules-demo svg, .win-parade svg { width: 52px; height: 52px; overflow: visible; }
-.win-parade svg { animation: dance .6s ease-in-out infinite alternate; }
-.win-parade svg:nth-child(2n) { animation-delay: .3s; }
-.lose-face svg { width: 90px; height: 90px; }
+.rules-demo .weirdling, .win-parade .weirdling { width: 52px; height: 52px; overflow: visible; }
+.win-parade .weirdling { animation: dance .6s ease-in-out infinite alternate; }
+.win-parade .weirdling:nth-child(2n) { animation-delay: .3s; }
+.lose-face .weirdling { width: 90px; height: 90px; }
+/* creatures that are artwork images instead of drawings */
+.img-weirdling { object-fit: contain; -webkit-user-drag: none; pointer-events: none; }
+.img-weirdling.sad { filter: grayscale(.7) brightness(.85) drop-shadow(0 3px 0 rgba(0,0,0,.18)) !important; transform: rotate(-8deg); }
 
 .level-grid {
   display: grid;

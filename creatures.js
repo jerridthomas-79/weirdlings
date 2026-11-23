@@ -70,9 +70,8 @@
       body: "M50 14 C76 14 88 34 88 56 L88 72 Q88 80 82 80 Q78 80 78 88 Q78 94 72 94 Q66 94 66 86 L66 82 Q50 86 40 82 L40 90 Q40 96 34 96 Q28 96 28 90 L28 80 Q12 80 12 66 L12 56 C12 34 24 14 50 14Z",
       eyes: [[34, 46, 8], [52, 40, 9], [68, 50, 7]], mouth: "M38 66 Q50 74 62 66",
     },
-    { // Puff: cloud, sleepy eyes
-      body: "M30 40 C30 22 50 18 58 28 C66 16 88 22 84 42 C96 48 94 70 80 72 C78 88 58 90 50 80 C40 92 18 86 20 72 C6 68 8 44 30 40Z",
-      eyes: [[40, 54, 8], [62, 54, 8]], mouth: "M46 68 Q50 72 54 68", sleepy: true,
+    { // Toadstool: the mushroom toad (artwork image) - red patches
+      img: "assets/creature-toad.webp?v=15",
     },
     { // Stalky: eyes on stalks
       back: (c) => `<path d="M38 40 Q32 22 28 14 M62 40 Q68 22 72 14" stroke="${c}" stroke-width="7" stroke-linecap="round" fill="none"/>` +
@@ -93,6 +92,9 @@
 
   function creatureSVG(index, mood) {
     const d = DESIGNS[index % DESIGNS.length];
+    if (d.img) {
+      return `<img class="weirdling img-weirdling${mood === "sad" ? " sad" : ""}" src="${d.img}" alt="" draggable="false">`;
+    }
     const c = REGION_COLORS[index % REGION_COLORS.length].body;
     const eyes = d.eyes.map(([x, y, r]) =>
       d.sleepy && mood !== "sad"
