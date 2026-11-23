@@ -12,8 +12,9 @@
   <title>Weirdlings</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-180.png">
-  <link rel="manifest" href="manifest.json?v=9">
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="manifest" href="manifest.json?v=10">
+  <link rel="preload" href="assets/logo.webp" as="image" type="image/webp">
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute">
@@ -32,7 +33,7 @@
       <button class="icon-btn" id="btn-haptics" aria-label="Toggle vibration">📳</button>
     </div>
     <div class="home-hero">
-      <h1 class="logo">Weirdlings</h1>
+      <h1 class="logo-wrap"><picture><source srcset="assets/logo.webp" type="image/webp"><img class="logo-img" src="assets/logo.png" alt="Weirdlings"></picture></h1>
       <p class="tagline">a cozy little logic puzzle</p>
       <div class="home-grid" id="home-grid"></div>
     </div>
@@ -53,7 +54,7 @@
     <header class="top">
       <button class="icon-btn" id="btn-home" aria-label="Back to home">←</button>
       <div class="title-block">
-        <h1>Weirdlings</h1>
+        <h1 class="mini-logo-wrap"><picture><source srcset="assets/logo.webp" type="image/webp"><img class="mini-logo" src="assets/logo.png" alt="Weirdlings"></picture></h1>
         <div class="level-label" id="level-label">Level 1</div>
       </div>
       <span class="icon-btn spacer" aria-hidden="true"></span>
@@ -121,8 +122,8 @@
     </div>
   </div>
 
-  <script src="puzzle.js?v=9"></script>
-  <script src="creatures.js?v=9"></script>
-  <script src="game.js?v=9"></script>
+  <script src="puzzle.js?v=10"></script>
+  <script src="creatures.js?v=10"></script>
+  <script src="game.js?v=10"></script>
 </body>
 </html>
