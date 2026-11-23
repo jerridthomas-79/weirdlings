@@ -33,7 +33,7 @@ html, body {
 body {
   position: fixed; inset: 0;
   /* cave background, shown behind every page */
-  background: var(--bg2) url("assets/bg.jpg?v=15") center / cover no-repeat;
+  background: var(--bg2) url("assets/bg.jpg?v=16") center / cover no-repeat;
 } /* stop the page bouncing/scrolling */
 
 #app {
@@ -111,7 +111,11 @@ h1 {
   padding: calc(var(--gap) * 1.6);
   border-radius: calc(var(--gap) * 2 + 14px);
   background: #fff;
-  box-shadow: 0 12px 30px rgba(0,0,0,.35);
+  /* drop shadow so the board lifts off the cave background */
+  box-shadow:
+    0 6px 0 rgba(0,0,0,.22),
+    0 16px 24px rgba(0,0,0,.55),
+    0 30px 60px rgba(0,0,0,.5);
   touch-action: none;
 }
 .board.shake { animation: shake .4s; }
