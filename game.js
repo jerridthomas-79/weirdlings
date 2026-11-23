@@ -163,6 +163,7 @@
     hearts = MAX_HEARTS;
     hints = HINTS_PER_LEVEL;
     history = [];
+    lastTap = { i: -1, time: 0 };
     finished = false;
     elapsed = 0;
     startTime = Date.now();
@@ -223,7 +224,6 @@
   function updateTools() {
     $("hint-count").textContent = hints;
     $("btn-hint").disabled = hints <= 0 || finished;
-    $("btn-undo").disabled = history.length === 0 || finished;
   }
 
   function fmtTime(ms) {
@@ -289,12 +289,25 @@
     }
   }
 
+  // Tap rules:
+  //  - second tap on the same square within 1 second -> place a weirdling
+  //  - otherwise a tap toggles the X on/off
+  const DOUBLE_TAP_MS = 1000;
+  let lastTap = { i: -1, time: 0 };
   function tap(i) {
     if (finished) return;
     const s = cells[i];
-    if (s === 0) { setCells([{ i, next: 1 }]); sfx.mark(); haptic.light(); }
-    else if (s === 1) tryPlace(i);
-    // placed weirdlings stay put
+    if (s === 2) return; // placed weirdlings stay put
+    const now = Date.now();
+    if (lastTap.i === i && now - lastTap.time <= DOUBLE_TAP_MS) {
+      lastTap = { i: -1, time: 0 };
+      tryPlace(i);
+      return;
+    }
+    lastTap = { i, time: now };
+    setCells([{ i, next: s === 0 ? 1 : 0 }]);
+    sfx.mark();
+    haptic.light();
   }
 
   function undo() {
@@ -422,7 +435,7 @@
   function endDrag() {
     if (!drag) return;
     if (!drag.moved) tap(drag.start);
-    else if (drag.changes.length) { history.push(drag.changes); updateTools(); }
+    else if (drag.changes.length) { history.push(drag.changes); lastTap = { i: -1, time: 0 }; updateTools(); }
     drag = null;
   }
   boardEl.addEventListener("pointerup", endDrag);
@@ -494,7 +507,6 @@
   }
 
   // ---------- buttons ----------
-  $("btn-undo").addEventListener("click", undo);
   $("btn-hint").addEventListener("click", hint);
   $("btn-restart").addEventListener("click", () => startLevel(level));
   $("btn-help").addEventListener("click", showHelp);
@@ -506,14 +518,11 @@
   soundBtn.addEventListener("click", () => { save.sound = !save.sound; writeSave(); renderSound(); });
   renderSound();
 
-  document.addEventListener("keydown", (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "z") { e.preventDefault(); undo(); }
-  });
 
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=6")
+  fetch("boards.json?v=7")
     .then((r) => r.json())
     .then((data) => {
       bank = data;

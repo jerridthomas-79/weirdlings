@@ -4,9 +4,9 @@ A cozy logic puzzle for your phone's browser, inspired by Meowdoku.
 
 **Rules:** place one weirdling in every row, every column, and every colored patch. Weirdlings are shy, so no two can touch, not even corner to corner.
 
-- Tap a square to mark ✕, then tap it again to place a weirdling. Drag across squares to mark several at once.
+- Tap a square to mark ✕ (tap again after a second to clear it). Double-tap within 1 second to place a weirdling. Drag across squares to mark several at once.
 - A wrong placement costs a ❤️. Lose all 3 and the level restarts.
-- 2 hints per level, plus undo and restart.
+- 2 hints per level, plus restart.
 - 200 levels that grow from 5×5 up to 13×13, saved in `boards.json`. Every puzzle has exactly one solution.
 - After level 200 the game reuses a board you've already solved, rotated or flipped and recolored so it looks new. It never generates new boards.
 - Progress saves on your device. Use "Add to Home Screen" to play it like an app.

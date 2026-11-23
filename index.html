@@ -12,8 +12,8 @@
   <title>Weirdlings</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-180.png">
-  <link rel="manifest" href="manifest.json?v=6">
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="manifest" href="manifest.json?v=7">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute">
@@ -44,10 +44,9 @@
       <div id="board" class="board" role="grid" aria-label="Puzzle board"></div>
     </main>
 
-    <p class="tip" id="tip">Tap once to mark ✕ · tap again to place a weirdling</p>
+    <p class="tip" id="tip">Tap to mark ✕ · double-tap to place a weirdling</p>
 
     <nav class="tools">
-      <button class="tool" id="btn-undo"><span>↶</span>Undo</button>
       <button class="tool" id="btn-hint"><span>💡</span>Hint <b id="hint-count">2</b></button>
       <button class="tool" id="btn-restart"><span>⟳</span>Restart</button>
       <button class="tool" id="btn-help"><span>?</span>Rules</button>
@@ -65,7 +64,7 @@
         <li>…and one in every <b>colored patch</b>.</li>
         <li>Weirdlings are shy: they <b>can't touch</b>, not even corner to corner.</li>
       </ul>
-      <p class="small">Tap a square to mark it ✕ when you know a weirdling can't go there. Tap again to place one. Drag across squares to mark lots at once. A wrong guess costs a ♥ — lose all three and you start the level over.</p>
+      <p class="small">Tap a square to mark it ✕ when you know a weirdling can't go there (tap it again later to clear it). Double-tap a square quickly to place a weirdling. Drag across squares to mark lots at once. A wrong guess costs a ♥ — lose all three and you start the level over.</p>
       <button class="big-btn" data-close>Let's go!</button>
     </div>
   </div>
@@ -96,8 +95,8 @@
     </div>
   </div>
 
-  <script src="puzzle.js?v=6"></script>
-  <script src="creatures.js?v=6"></script>
-  <script src="game.js?v=6"></script>
+  <script src="puzzle.js?v=7"></script>
+  <script src="creatures.js?v=7"></script>
+  <script src="game.js?v=7"></script>
 </body>
 </html>
