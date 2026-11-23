@@ -3,6 +3,7 @@
   "short_name": "Weirdlings",
   "start_url": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#1F1838",
   "theme_color": "#2B2340",
   "icons": [

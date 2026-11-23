@@ -398,6 +398,25 @@
   boardEl.addEventListener("pointerup", endDrag);
   boardEl.addEventListener("pointercancel", endDrag);
 
+  // ---------- iPhone: block zooming ----------
+  // Safari ignores "no zoom" settings, so stop double-tap and pinch zoom here.
+  boardEl.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
+  boardEl.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+  document.addEventListener("dblclick", (e) => e.preventDefault(), { passive: false });
+  ["gesturestart", "gesturechange", "gestureend"].forEach((t) =>
+    document.addEventListener(t, (e) => e.preventDefault(), { passive: false }));
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd < 350) {
+      // second quick tap: block the zoom but still press the button
+      e.preventDefault();
+      const btn = e.target.closest && e.target.closest("button");
+      if (btn && !btn.disabled) btn.click();
+    }
+    lastTouchEnd = now;
+  }, { passive: false });
+
   // ---------- modals ----------
   function openModal(id) { $(id).hidden = false; }
   function closeModal(id) { $(id).hidden = true; }
