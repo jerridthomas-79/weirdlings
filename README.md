@@ -21,3 +21,13 @@ Plain HTML/CSS/JS with no build step, hosted on GitHub Pages.
 | `creatures.js` | The weirdling artwork (SVG) |
 | `game.js` | Gameplay, level order, rotate/recolor, saving |
 | `style.css` | Look and animations |
+
+## Online leaderboard
+
+Players pick a name and their total levels completed (max 99,999) is shared on a leaderboard stored in [Supabase](https://supabase.com).
+
+1. Create a free Supabase project.
+2. Open **SQL Editor**, paste in `supabase/setup.sql`, and click **Run**.
+3. Put the project URL and the **Publishable** key into `config.js`.
+
+Without those settings the game still works; the leaderboard shows just your own total.

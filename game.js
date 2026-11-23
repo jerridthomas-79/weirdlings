@@ -4,6 +4,7 @@
   const { REGION_COLORS, creatureSVG } = window.Weirdlings;
 
   const MAX_HEARTS = 3;
+  const MAX_LEVEL = 99999; // level counter tops out here
   const HINTS_PER_LEVEL = 2;
   const STORE_KEY = "weirdlings-v1";
 
@@ -358,10 +359,12 @@
     const prevBest = save.best[level];
     const isBest = !prevBest || elapsed < prevBest;
     if (isBest) save.best[level] = elapsed;
-    save.unlocked = Math.max(save.unlocked, level + 1);
-    save.current = level + 1; // Play on the home screen goes to the next level
+    save.unlocked = Math.min(MAX_LEVEL, Math.max(save.unlocked, level + 1));
+    save.current = Math.min(MAX_LEVEL, level + 1); // Play on the home screen goes to the next level
     writeSave();
+    syncScore();
     setTimeout(() => {
+      $("btn-next").hidden = level >= MAX_LEVEL;
       const parade = $("win-parade");
       parade.innerHTML = "";
       for (let g = 0; g < 5; g++) parade.insertAdjacentHTML("beforeend", creatureSVG(puzzle.colorOf[g]));
@@ -544,7 +547,7 @@
   function showLevels() {
     const grid = $("level-grid");
     grid.innerHTML = "";
-    const shown = Math.max(30, Math.ceil((save.unlocked + 10) / 5) * 5);
+    const shown = Math.min(MAX_LEVEL, Math.max(30, Math.ceil((save.unlocked + 10) / 5) * 5));
     for (let lv = 1; lv <= shown; lv++) {
       const b = document.createElement("button");
       b.innerHTML = `${lv}<small>${sizeForLevel(lv)}×${sizeForLevel(lv)}</small>`;
@@ -563,6 +566,73 @@
   $("btn-hint").addEventListener("click", hint);
   $("btn-restart").addEventListener("click", () => startLevel(level));
   $("btn-help").addEventListener("click", showHelp);
+  // ---------- leaderboard ----------
+  const LB = window.Leaderboard;
+  function totalCompleted() { return Math.min(MAX_LEVEL, Object.keys(save.done).length); }
+  function syncScore() {
+    if (!LB.configured() || !LB.getPlayer().name) return;
+    LB.submit(totalCompleted()).catch(() => {});
+  }
+  function escapeHtml(t) {
+    return String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  async function openLeaderboard() {
+    const me = LB.getPlayer();
+    const total = totalCompleted();
+    const meBox = $("lb-me");
+    const list = $("lb-list");
+    const status = $("lb-status");
+    meBox.innerHTML = `<div>${me.name ? escapeHtml(me.name) : "You"}<small id="lb-rank">${me.name ? "" : "Not on the board yet"}</small></div>` +
+      `<div class="big">${total.toLocaleString()}</div>`;
+    $("lb-join").hidden = !!me.name || !LB.configured();
+    list.innerHTML = "";
+    openModal("modal-leaders");
+    if (!LB.configured()) {
+      status.textContent = "The online leaderboard isn't switched on yet. Your total is saved on this phone.";
+      return;
+    }
+    status.textContent = "Loading…";
+    try {
+      if (me.name) await LB.submit(total).catch(() => {});
+      const [rows, rank] = await Promise.all([LB.top(50), me.name ? LB.rank(total) : Promise.resolve(null)]);
+      list.innerHTML = rows.map((r, k) =>
+        `<li class="${r.id === me.id ? "me" : ""}"><span class="rk">${k + 1}</span><span class="nm">${escapeHtml(r.name)}</span><span class="lv">${Number(r.levels).toLocaleString()}</span></li>`
+      ).join("");
+      status.textContent = rows.length ? "" : "No one's on the board yet. Be the first!";
+      if (rank && $("lb-rank")) $("lb-rank").textContent = `Rank #${rank.toLocaleString()}`;
+    } catch (e) {
+      status.textContent = "Couldn't reach the leaderboard. Check your connection and try again.";
+    }
+  }
+  $("lb-join").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = LB.cleanName($("lb-name").value);
+    if (!name) return;
+    LB.setName(name);
+    $("lb-name").blur();
+    openLeaderboard();
+  });
+
+  // ---------- game menu ----------
+  function openMenu() {
+    $("menu-sound").querySelector("b").textContent = save.sound ? "On" : "Off";
+    $("menu-haptics").querySelector("b").textContent = save.haptics ? "On" : "Off";
+    openModal("modal-menu");
+  }
+  $("btn-menu").addEventListener("click", openMenu);
+  $("menu-leaders").addEventListener("click", () => { closeModal("modal-menu"); openLeaderboard(); });
+  $("menu-levels").addEventListener("click", () => { closeModal("modal-menu"); showLevels(); });
+  $("menu-help").addEventListener("click", () => { closeModal("modal-menu"); showHelp(); });
+  $("menu-home").addEventListener("click", () => { closeModal("modal-menu"); showHome(); });
+  $("menu-sound").addEventListener("click", () => {
+    save.sound = !save.sound; writeSave(); renderSound(); openMenu();
+  });
+  $("menu-haptics").addEventListener("click", () => {
+    save.haptics = !save.haptics; writeSave(); renderHaptics(); haptic.light(); openMenu();
+  });
+  $("btn-home-leaders").addEventListener("click", openLeaderboard);
+
   // ---------- home screen ----------
   function buildHomeGrid() {
     // a little 3x3 sample board with weirdlings and X marks
@@ -590,13 +660,13 @@
     $("play-label").textContent = inProgress ? "Continue" : "Play";
     const n = sizeForLevel(lv);
     $("play-sub").textContent = `Level ${lv} · ${n}×${n}`;
-    const solved = Object.keys(save.done).length;
-    $("home-stats").textContent = solved ? `${solved} puzzle${solved === 1 ? "" : "s"} solved` : "";
+    const solved = totalCompleted();
+    $("home-stats").textContent = solved ? `${solved.toLocaleString()} level${solved === 1 ? "" : "s"} completed` : "";
   }
 
   function showHome() {
     if (puzzle && !finished && !paused) { paused = true; updateTimer(); }
-    ["modal-win", "modal-lose", "modal-help", "modal-levels"].forEach(closeModal);
+    ["modal-win", "modal-lose", "modal-help", "modal-levels", "modal-menu", "modal-leaders"].forEach(closeModal);
     $("app").hidden = true;
     $("home").hidden = false;
     buildHomeGrid();
@@ -629,7 +699,7 @@
   function renderHaptics() { hapticsBtn.classList.toggle("off", !save.haptics); }
   hapticsBtn.addEventListener("click", () => { save.haptics = !save.haptics; writeSave(); renderHaptics(); haptic.light(); });
   renderHaptics();
-  $("btn-next").addEventListener("click", () => { closeModal("modal-win"); startLevel(level + 1); });
+  $("btn-next").addEventListener("click", () => { closeModal("modal-win"); startLevel(Math.min(MAX_LEVEL, level + 1)); });
   $("btn-retry").addEventListener("click", () => { closeModal("modal-lose"); startLevel(level); });
   const soundBtn = $("btn-sound");
   function renderSound() { soundBtn.textContent = save.sound ? "🔊" : "🔇"; soundBtn.classList.toggle("off", !save.sound); }
@@ -640,7 +710,7 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=19")
+  fetch("boards.json?v=20")
     .then((r) => r.json())
     .then((data) => {
       bank = data;

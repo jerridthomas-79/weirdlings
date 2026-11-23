@@ -12,10 +12,10 @@
   <title>Weirdlings</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-180.png">
-  <link rel="manifest" href="manifest.json?v=19">
-  <link rel="preload" href="assets/bg.jpg?v=19" as="image">
+  <link rel="manifest" href="manifest.json?v=20">
+  <link rel="preload" href="assets/bg.jpg?v=20" as="image">
   <link rel="preload" href="assets/logo.webp" as="image" type="image/webp">
-  <link rel="stylesheet" href="style.css?v=19">
+  <link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute">
@@ -38,7 +38,7 @@
       <p class="tagline">a cozy little logic puzzle</p>
       <div class="home-stage">
         <div class="home-grid" id="home-grid"></div>
-        <img class="hero-toad" src="assets/toad.webp?v=19" alt="Weirdlings mushroom toad">
+        <img class="hero-toad" src="assets/toad.webp?v=20" alt="Weirdlings mushroom toad">
       </div>
     </div>
     <div class="home-actions">
@@ -46,9 +46,10 @@
         <span id="play-label">Play</span>
         <small id="play-sub">Level 1 · 5×5</small>
       </button>
-      <div class="home-row">
-        <button class="big-btn ghost" id="btn-home-levels">Levels</button>
-        <button class="big-btn ghost" id="btn-home-help">How to play</button>
+      <div class="home-row three">
+        <button class="big-btn ghost" id="btn-home-levels"><span>🗺️</span>Levels</button>
+        <button class="big-btn ghost" id="btn-home-leaders"><span>🏆</span>Leaderboard</button>
+        <button class="big-btn ghost" id="btn-home-help"><span>❓</span>How to play</button>
       </div>
       <p class="home-stats" id="home-stats"></p>
     </div>
@@ -61,7 +62,7 @@
         <h1 class="mini-logo-wrap"><picture><source srcset="assets/logo.webp" type="image/webp"><img class="mini-logo" src="assets/logo.png" alt="Weirdlings"></picture></h1>
         <div class="level-label" id="level-label">Level 1</div>
       </div>
-      <span class="icon-btn spacer" aria-hidden="true"></span>
+      <button class="icon-btn" id="btn-menu" aria-label="Menu">☰</button>
     </header>
 
     <div class="status">
@@ -118,6 +119,39 @@
     </div>
   </div>
 
+  <div class="modal" id="modal-menu" hidden>
+    <div class="card">
+      <h2>Menu</h2>
+      <div class="menu-list">
+        <button class="menu-item" id="menu-leaders"><span>🏆</span>Leaderboard</button>
+        <button class="menu-item" id="menu-levels"><span>🗺️</span>Levels</button>
+        <button class="menu-item" id="menu-help"><span>❓</span>How to play</button>
+        <button class="menu-item" id="menu-sound"><span>🔊</span>Sound: <b>On</b></button>
+        <button class="menu-item" id="menu-haptics"><span>📳</span>Vibration: <b>On</b></button>
+        <button class="menu-item" id="menu-home"><span>🏠</span>Home</button>
+      </div>
+      <button class="big-btn ghost" data-close>Close</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-leaders" hidden>
+    <div class="card wide">
+      <h2>🏆 Leaderboard</h2>
+      <p class="lb-sub">Total levels completed</p>
+      <div class="lb-me" id="lb-me"></div>
+      <form class="lb-join" id="lb-join" hidden>
+        <label for="lb-name">Pick a name to join the leaderboard</label>
+        <div class="lb-join-row">
+          <input id="lb-name" maxlength="16" autocomplete="nickname" autocapitalize="words" placeholder="Your name" required>
+          <button class="big-btn" type="submit">Join</button>
+        </div>
+      </form>
+      <ol class="lb-list" id="lb-list"></ol>
+      <p class="lb-status" id="lb-status"></p>
+      <button class="big-btn ghost" data-close>Close</button>
+    </div>
+  </div>
+
   <div class="modal" id="modal-levels" hidden>
     <div class="card wide">
       <h2>Levels</h2>
@@ -126,8 +160,10 @@
     </div>
   </div>
 
-  <script src="puzzle.js?v=19"></script>
-  <script src="creatures.js?v=19"></script>
-  <script src="game.js?v=19"></script>
+  <script src="config.js?v=20"></script>
+  <script src="leaderboard.js?v=20"></script>
+  <script src="puzzle.js?v=20"></script>
+  <script src="creatures.js?v=20"></script>
+  <script src="game.js?v=20"></script>
 </body>
 </html>
