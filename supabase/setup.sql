@@ -46,3 +46,9 @@ end;
 $$;
 revoke all on function public.submit_score(uuid, text, text, integer) from public;
 grant execute on function public.submit_score(uuid, text, text, integer) to anon, authenticated;
+
+-- Read the leaderboard through normal permissions (fixes the "security definer view" advisor).
+alter view public.leaderboard set (security_invoker = on);
+grant select (id, name, levels, updated_at) on public.players to anon, authenticated;
+create policy "Anyone can read leaderboard rows" on public.players
+  for select to anon, authenticated using (true);
