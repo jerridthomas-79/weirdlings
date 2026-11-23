@@ -351,7 +351,7 @@
     updateTimer();
     clearInterval(timerId);
     updateTools();
-    boardEl.classList.add("won");
+    celebrate();
     sfx.win();
     confetti();
     save.done[level] = true;
@@ -370,7 +370,58 @@
       $("win-stats").innerHTML = `Time <b>${fmtTime(elapsed)}</b>${isBest && prevBest ? " · new best!" : ""}<br>` +
         `${"❤️".repeat(hearts)}${"🤍".repeat(lostHearts)}`;
       openModal("modal-win");
-    }, 1300);
+    }, Math.max(1300, 120 + n * PULSE_STAGGER + 900));
+  }
+
+  // Board-complete effect: flash the board, pulse each weirdling in turn,
+  // and burst tiny copies of it outward (solid for 15px, fading over the next 10px).
+  const PULSE_STAGGER = 90;
+  function celebrate() {
+    boardEl.classList.remove("flash");
+    void boardEl.offsetWidth;
+    boardEl.classList.add("flash");
+    setTimeout(() => boardEl.classList.remove("flash"), 500);
+
+    const placed = [];
+    for (let r = 0; r < n; r++) placed.push(r * n + puzzle.solution[r]);
+    placed.forEach((i, k) => {
+      setTimeout(() => {
+        const cell = cellEls[i];
+        const w = cell.querySelector(".weirdling");
+        if (w) {
+          w.classList.remove("pulse");
+          void w.getBoundingClientRect();
+          w.classList.add("pulse");
+        }
+        cell.classList.add("bursting");
+        const size = Math.max(7, cell.clientWidth * 0.24);
+        const r0 = cell.clientWidth * 0.34; // start at the creature's edge
+        const count = 8;
+        const spin = Math.random() * Math.PI;
+        for (let p = 0; p < count; p++) {
+          const a = spin + (p / count) * Math.PI * 2;
+          const el = document.createElement("span");
+          el.className = "burst";
+          el.style.width = el.style.height = size + "px";
+          const at = (d, f) => (f(a) * d).toFixed(1) + "px";
+          el.style.setProperty("--x0", at(r0, Math.cos));
+          el.style.setProperty("--y0", at(r0, Math.sin));
+          el.style.setProperty("--x1", at(r0 + 15, Math.cos)); // 15px out: fully visible
+          el.style.setProperty("--y1", at(r0 + 15, Math.sin));
+          el.style.setProperty("--x2", at(r0 + 25, Math.cos)); // next 10px: fade to 0
+          el.style.setProperty("--y2", at(r0 + 25, Math.sin));
+          el.innerHTML = creatureSVG(regionAt(i));
+          cell.appendChild(el);
+          setTimeout(() => el.remove(), 700);
+        }
+        setTimeout(() => cell.classList.remove("bursting"), 700);
+      }, 120 + k * PULSE_STAGGER);
+    });
+    // start the happy dance once every weirdling has pulsed
+    setTimeout(() => {
+      placed.forEach((i) => { const w = cellEls[i].querySelector(".weirdling"); if (w) w.classList.remove("pulse"); });
+      boardEl.classList.add("won");
+    }, 120 + placed.length * PULSE_STAGGER + 450);
   }
 
   function lose() {
@@ -589,7 +640,7 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=16")
+  fetch("boards.json?v=18")
     .then((r) => r.json())
     .then((data) => {
       bank = data;

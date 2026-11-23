@@ -71,7 +71,7 @@
       eyes: [[34, 46, 8], [52, 40, 9], [68, 50, 7]], mouth: "M38 66 Q50 74 62 66",
     },
     { // Toadstool: the mushroom toad (artwork image) - red patches
-      img: "assets/creature-toad.webp?v=16",
+      img: "assets/creature-toad.webp?v=18",
     },
     { // Stalky: eyes on stalks
       back: (c) => `<path d="M38 40 Q32 22 28 14 M62 40 Q68 22 72 14" stroke="${c}" stroke-width="7" stroke-linecap="round" fill="none"/>` +
