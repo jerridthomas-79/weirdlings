@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#2B2340">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Weirdlings">
+  <meta name="description" content="Weirdlings — a cozy logic puzzle. Give every weirdling its own row, column and patch.">
+  <title>Weirdlings</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <radialGradient id="shine" cx="35%" cy="25%" r="70%">
+        <stop offset="0" stop-color="#fff" stop-opacity="1"/>
+        <stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+  </svg>
+
+  <div id="app">
+    <header class="top">
+      <button class="icon-btn" id="btn-levels" aria-label="Choose level">☰</button>
+      <div class="title-block">
+        <h1>Weirdlings</h1>
+        <div class="level-label" id="level-label">Level 1</div>
+      </div>
+      <button class="icon-btn" id="btn-sound" aria-label="Toggle sound">🔊</button>
+    </header>
+
+    <div class="status">
+      <div class="hearts" id="hearts" aria-label="Lives"></div>
+      <div class="timer" id="timer">0:00</div>
+    </div>
+
+    <main class="board-wrap">
+      <div id="board" class="board" role="grid" aria-label="Puzzle board"></div>
+    </main>
+
+    <p class="tip" id="tip">Tap once to mark ✕ · tap again to place a weirdling</p>
+
+    <nav class="tools">
+      <button class="tool" id="btn-undo"><span>↶</span>Undo</button>
+      <button class="tool" id="btn-hint"><span>💡</span>Hint <b id="hint-count">2</b></button>
+      <button class="tool" id="btn-restart"><span>⟳</span>Restart</button>
+      <button class="tool" id="btn-help"><span>?</span>Rules</button>
+    </nav>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal" id="modal-help" hidden>
+    <div class="card">
+      <h2>How to play</h2>
+      <div class="rules-demo" id="rules-demo"></div>
+      <ul class="rules">
+        <li>Place <b>one weirdling</b> in every <b>row</b>.</li>
+        <li>…and one in every <b>column</b>.</li>
+        <li>…and one in every <b>colored patch</b>.</li>
+        <li>Weirdlings are shy: they <b>can't touch</b>, not even corner to corner.</li>
+      </ul>
+      <p class="small">Tap a square to mark it ✕ when you know a weirdling can't go there. Tap again to place one. Drag across squares to mark lots at once. A wrong guess costs a ♥ — lose all three and you start the level over.</p>
+      <button class="big-btn" data-close>Let's go!</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-win" hidden>
+    <div class="card">
+      <div class="win-parade" id="win-parade"></div>
+      <h2 id="win-title">Puzzle solved!</h2>
+      <p id="win-stats"></p>
+      <button class="big-btn" id="btn-next">Next level →</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-lose" hidden>
+    <div class="card">
+      <div class="lose-face" id="lose-face"></div>
+      <h2>Out of hearts</h2>
+      <p>The weirdlings got grumpy. Give it another go!</p>
+      <button class="big-btn" id="btn-retry">Try again</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-levels" hidden>
+    <div class="card wide">
+      <h2>Levels</h2>
+      <div class="level-grid" id="level-grid"></div>
+      <button class="big-btn ghost" data-close>Close</button>
+    </div>
+  </div>
+
+  <script src="puzzle.js"></script>
+  <script src="creatures.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
