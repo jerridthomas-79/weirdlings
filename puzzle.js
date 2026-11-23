@@ -82,20 +82,14 @@
     return reg;
   }
 
-  // Count solutions (stops at limit). Returns {count, first}.
-  function countSolutions(n, reg, limit = 2) {
+  // Find up to `limit` solutions. Returns {count, sols}.
+  function solve(n, reg, limit = 2) {
     const usedCol = new Array(n).fill(false);
     const usedReg = new Array(n).fill(false);
     const cols = new Array(n);
-    let count = 0;
-    let first = null;
+    const sols = [];
     function go(r) {
-      if (count >= limit) return;
-      if (r === n) {
-        count++;
-        if (!first) first = cols.slice();
-        return;
-      }
+      if (r === n) { sols.push(cols.slice()); return; }
       for (let c = 0; c < n; c++) {
         if (usedCol[c]) continue;
         const g = reg[r * n + c];
@@ -105,45 +99,73 @@
         cols[r] = c;
         go(r + 1);
         usedCol[c] = usedReg[g] = false;
-        if (count >= limit) return;
+        if (sols.length >= limit) return;
       }
     }
     go(0);
-    return { count, first };
+    return { count: sols.length, sols };
+  }
+  function countSolutions(n, reg, limit = 2) {
+    const r = solve(n, reg, limit);
+    return { count: r.count, first: r.sols[0] || null };
+  }
+
+  // Is region g still connected if cell `skip` is removed from it?
+  function connectedWithout(n, reg, g, skip) {
+    const cellsOf = [];
+    for (let i = 0; i < n * n; i++) if (reg[i] === g && i !== skip) cellsOf.push(i);
+    if (!cellsOf.length) return false;
+    const seen = new Set([cellsOf[0]]);
+    const stack = [cellsOf[0]];
+    while (stack.length) {
+      const i = stack.pop();
+      const r = Math.floor(i / n), c = i % n;
+      for (const j of [r > 0 ? i - n : -1, r < n - 1 ? i + n : -1, c > 0 ? i - 1 : -1, c < n - 1 ? i + 1 : -1]) {
+        if (j < 0 || j === skip || seen.has(j) || reg[j] !== g) continue;
+        seen.add(j);
+        stack.push(j);
+      }
+    }
+    return seen.size === cellsOf.length;
   }
 
   // Generate a puzzle with exactly one solution.
+  // Grow random regions, then keep breaking any rival solution by moving
+  // one of its cells into a neighbouring region.
   function generate(n, seed) {
     const rng = mulberry32(seed);
-    for (let attempt = 0; attempt < 400; attempt++) {
+    for (let attempt = 0; attempt < 200; attempt++) {
       const cols = randomSolution(n, rng);
       if (!cols) continue;
-      for (let tries = 0; tries < 60; tries++) {
-        const reg = growRegions(n, cols, rng);
-        if (countSolutions(n, reg, 2).count === 1) {
-          // Shuffle region ids so colors don't reveal which row holds the answer.
+      const reg = growRegions(n, cols, rng);
+      const anchors = new Set(cols.map((c, r) => r * n + c));
+      for (let fix = 0; fix < n * n * 3; fix++) {
+        const { sols } = solve(n, reg, 2);
+        const rival = sols.find((s) => s.some((c, r) => c !== cols[r]));
+        if (!rival) {
           const perm = shuffle([...Array(n).keys()], rng);
           return { n, regions: reg.map((g) => perm[g]), solution: cols };
         }
+        // candidate moves: a rival cell (not an anchor) joins an adjacent region
+        const moves = [];
+        rival.forEach((c, r) => {
+          const i = r * n + c;
+          if (anchors.has(i)) return;
+          const g = reg[i];
+          if (!connectedWithout(n, reg, g, i)) return;
+          for (const j of [r > 0 ? i - n : -1, r < n - 1 ? i + n : -1, c > 0 ? i - 1 : -1, c < n - 1 ? i + 1 : -1]) {
+            if (j >= 0 && reg[j] !== g) moves.push([i, reg[j]]);
+          }
+        });
+        if (!moves.length) break;
+        const [i, g2] = moves[Math.floor(rng() * moves.length)];
+        reg[i] = g2;
       }
     }
     throw new Error("Could not generate puzzle");
   }
 
-  function sizeForLevel(level) {
-    if (level <= 8) return 5;
-    if (level <= 20) return 6;
-    if (level <= 40) return 7;
-    if (level <= 65) return 8;
-    return 9;
-  }
-
-  function puzzleForLevel(level) {
-    const n = sizeForLevel(level);
-    return generate(n, level * 7919 + 1234567);
-  }
-
-  const api = { generate, countSolutions, puzzleForLevel, sizeForLevel, mulberry32 };
+  const api = { generate, solve, countSolutions, mulberry32 };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.WeirdPuzzle = api;
 })(typeof window !== "undefined" ? window : globalThis);

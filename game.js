@@ -1,6 +1,6 @@
 // Weirdlings game UI
 (function () {
-  const { puzzleForLevel, sizeForLevel } = window.WeirdPuzzle;
+  const { mulberry32 } = window.WeirdPuzzle;
   const { REGION_COLORS, creatureSVG } = window.Weirdlings;
 
   const MAX_HEARTS = 3;
@@ -48,6 +48,71 @@
     win: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.25, "triangle", 0.12, i * 0.11)),
   };
 
+  // ---------- level bank ----------
+  // boards.json holds 200 unique puzzles in order (5x5 up to 13x13).
+  // Levels 1-200 play them in order. After that, a previously solved board
+  // is picked at random and rotated/flipped so it looks new.
+  // Every level also gets its own random colors.
+  let bank = [];
+  const B36 = "0123456789abc";
+
+  function shuffled(n, rng) {
+    const a = [...Array(n).keys()];
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // The 8 ways to rotate/flip a square grid.
+  function transformRC(sym, r, c, n) {
+    const m = n - 1;
+    switch (sym) {
+      case 1: return [c, m - r];       // rotate 90
+      case 2: return [m - r, m - c];   // rotate 180
+      case 3: return [m - c, r];       // rotate 270
+      case 4: return [r, m - c];       // mirror
+      case 5: return [m - r, c];       // flip
+      case 6: return [c, r];           // diagonal
+      case 7: return [m - c, m - r];   // anti-diagonal
+      default: return [r, c];
+    }
+  }
+
+  function bankPick(lv) {
+    if (lv <= bank.length) return { idx: lv - 1, sym: 0 };
+    const rng = mulberry32(lv * 2654435761);
+    let idx = Math.floor(rng() * bank.length);
+    if (idx === bankPick(lv - 1).idx) idx = (idx + 1 + Math.floor(rng() * (bank.length - 1))) % bank.length;
+    return { idx, sym: 1 + Math.floor(rng() * 7) };
+  }
+
+  function puzzleForLevel(lv) {
+    const { idx, sym } = bankPick(lv);
+    const b = bank[idx];
+    const n = b.n;
+    const regions = new Array(n * n);
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        const [r2, c2] = transformRC(sym, r, c, n);
+        regions[r2 * n + c2] = B36.indexOf(b.r[r * n + c]);
+      }
+    }
+    const solution = new Array(n);
+    for (let r = 0; r < n; r++) {
+      const [r2, c2] = transformRC(sym, r, B36.indexOf(b.s[r]), n);
+      solution[r2] = c2;
+    }
+    // fresh colors (and creatures) for this level
+    const colorOf = shuffled(REGION_COLORS.length, mulberry32(lv * 977 + 31)).slice(0, n);
+    return { n, regions, solution, colorOf, bankIndex: idx, sym };
+  }
+
+  function sizeForLevel(lv) {
+    return bank[bankPick(lv).idx].n;
+  }
+
   // ---------- state ----------
   let level, puzzle, n, cells, hearts, hints, history, startTime, elapsed, finished, timerId;
   let cellEls = [];
@@ -74,7 +139,8 @@
     $("level-label").textContent = `Level ${lv} · ${n}×${n}`;
   }
 
-  function regionAt(i) { return puzzle.regions[i]; }
+  // color/creature index for a cell's patch
+  function regionAt(i) { return puzzle.colorOf[puzzle.regions[i]]; }
 
   function buildBoard() {
     boardEl.innerHTML = "";
@@ -92,7 +158,7 @@
       el.setAttribute("role", "gridcell");
       const g = regionAt(i);
       el.style.background = REGION_COLORS[g].bg;
-      const thick = "3px", thin = "1px";
+      const thick = n >= 10 ? "2px" : "3px", thin = "1px";
       const topDiff = r > 0 && regionAt(i - n) !== g;
       const leftDiff = c > 0 && regionAt(i - 1) !== g;
       el.style.borderTopWidth = r === 0 ? "0" : topDiff ? thick : thin;
@@ -254,7 +320,7 @@
     setTimeout(() => {
       const parade = $("win-parade");
       parade.innerHTML = "";
-      for (let g = 0; g < Math.min(n, 5); g++) parade.insertAdjacentHTML("beforeend", creatureSVG((g + level) % 9));
+      for (let g = 0; g < 5; g++) parade.insertAdjacentHTML("beforeend", creatureSVG(puzzle.colorOf[g]));
       const lostHearts = MAX_HEARTS - hearts;
       $("win-title").textContent = lostHearts === 0 ? "Flawless!" : "Puzzle solved!";
       $("win-stats").innerHTML = `Time <b>${fmtTime(elapsed)}</b>${isBest && prevBest ? " · new best!" : ""}<br>` +
@@ -267,7 +333,7 @@
     finished = true;
     clearInterval(timerId);
     updateTools();
-    $("lose-face").innerHTML = creatureSVG(level % 9, "sad");
+    $("lose-face").innerHTML = creatureSVG(puzzle.colorOf[0], "sad");
     openModal("modal-lose");
   }
 
@@ -346,7 +412,7 @@
 
   function showHelp() {
     const demo = $("rules-demo");
-    demo.innerHTML = [0, 1, 3, 6, 8].map((g) => creatureSVG(g)).join("");
+    demo.innerHTML = [0, 1, 3, 9, 12].map((g) => creatureSVG(g)).join("");
     openModal("modal-help");
   }
 
@@ -385,11 +451,21 @@
     if ((e.metaKey || e.ctrlKey) && e.key === "z") { e.preventDefault(); undo(); }
   });
 
+  window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
+
   // ---------- go ----------
-  startLevel(Math.min(save.current || 1, save.unlocked));
-  if (!save.seenHelp) {
-    save.seenHelp = true;
-    writeSave();
-    showHelp();
-  }
+  fetch("boards.json")
+    .then((r) => r.json())
+    .then((data) => {
+      bank = data;
+      startLevel(Math.min(save.current || 1, save.unlocked));
+      if (!save.seenHelp) {
+        save.seenHelp = true;
+        writeSave();
+        showHelp();
+      }
+    })
+    .catch(() => {
+      boardEl.outerHTML = `<p style="text-align:center">Couldn't load the puzzles. Check your connection and refresh.</p>`;
+    });
 })();
