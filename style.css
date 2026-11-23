@@ -33,7 +33,7 @@ html, body {
 body {
   position: fixed; inset: 0;
   /* cave background, shown behind every page */
-  background: var(--bg2) url("assets/bg.jpg?v=21") center / cover no-repeat;
+  background: var(--bg2) url("assets/bg.jpg?v=22") center / cover no-repeat;
 } /* stop the page bouncing/scrolling */
 
 #app {
@@ -339,6 +339,7 @@ h1 {
 .lb-list li:nth-child(-n+3) .rk::before { font-size: 20px; }
 .lb-list .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lb-list .lv { font-variant-numeric: tabular-nums; }
+.world-note { color: #d6336c; font-size: 18px; }
 .lb-status { font-size: 13px; opacity: .7; margin: 4px 0 8px !important; }
 .play-btn { font-size: 26px; padding: 14px; display: flex; flex-direction: column; align-items: center; line-height: 1.15; }
 .play-btn small { font-size: 14px; font-weight: 700; opacity: .85; }
@@ -346,6 +347,26 @@ h1 {
 .icon-btn.spacer { visibility: hidden; }
 .icon-btn.off { opacity: .45; }
 .card .big-btn + .big-btn { margin-top: 12px; }
+
+/* best time / all-time record bar */
+.records {
+  width: var(--board-size);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.rec {
+  background: rgba(15,10,35,.55);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 14px;
+  padding: 6px 10px;
+  display: flex; flex-direction: column; line-height: 1.2;
+  min-width: 0;
+}
+.rec-label { font-size: 11px; font-weight: 800; opacity: .75; text-transform: uppercase; letter-spacing: .3px; }
+.rec b { font-size: 17px; font-variant-numeric: tabular-nums; color: var(--gold); }
+.rec small { font-size: 11px; font-weight: 700; opacity: .8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec.flash b { animation: recflash 1.2s ease-out; }
+@keyframes recflash { 0%, 40% { color: #fff; text-shadow: 0 0 12px var(--gold); } }
 
 .tip {
   margin: 2px 0 0; font-size: 13px; text-align: center;

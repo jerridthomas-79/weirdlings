@@ -12,10 +12,10 @@
   <title>Weirdlings</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-180.png">
-  <link rel="manifest" href="manifest.json?v=21">
-  <link rel="preload" href="assets/bg.jpg?v=21" as="image">
+  <link rel="manifest" href="manifest.json?v=22">
+  <link rel="preload" href="assets/bg.jpg?v=22" as="image">
   <link rel="preload" href="assets/logo.webp" as="image" type="image/webp">
-  <link rel="stylesheet" href="style.css?v=21">
+  <link rel="stylesheet" href="style.css?v=22">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute">
@@ -38,7 +38,7 @@
       <p class="tagline">a cozy little logic puzzle</p>
       <div class="home-stage">
         <div class="home-grid" id="home-grid"></div>
-        <img class="hero-toad" src="assets/toad.webp?v=21" alt="Weirdlings mushroom toad">
+        <img class="hero-toad" src="assets/toad.webp?v=22" alt="Weirdlings mushroom toad">
       </div>
     </div>
     <div class="home-actions">
@@ -68,6 +68,11 @@
     <div class="status">
       <div class="hearts" id="hearts" aria-label="Lives"></div>
       <div class="timer" id="timer">0:00</div>
+    </div>
+
+    <div class="records" id="records">
+      <div class="rec"><span class="rec-label">🏅 Your best</span><b id="rec-mine">–</b></div>
+      <div class="rec"><span class="rec-label">🌍 All-time record</span><b id="rec-world">–</b><small id="rec-world-name"></small></div>
     </div>
 
     <main class="board-wrap">
@@ -160,10 +165,10 @@
     </div>
   </div>
 
-  <script src="config.js?v=21"></script>
-  <script src="leaderboard.js?v=21"></script>
-  <script src="puzzle.js?v=21"></script>
-  <script src="creatures.js?v=21"></script>
-  <script src="game.js?v=21"></script>
+  <script src="config.js?v=22"></script>
+  <script src="leaderboard.js?v=22"></script>
+  <script src="puzzle.js?v=22"></script>
+  <script src="creatures.js?v=22"></script>
+  <script src="game.js?v=22"></script>
 </body>
 </html>

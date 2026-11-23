@@ -167,6 +167,7 @@
     lastTap = { i: -1, time: 0 };
     finished = false;
     elapsed = 0;
+    { const ws = $("win-stats"); if (ws) delete ws.dataset.ready; }
     startTime = Date.now();
     clearInterval(timerId);
     timerId = setInterval(updateTimer, 500);
@@ -175,6 +176,7 @@
     updateTools();
     updateTimer();
     $("level-label").textContent = `Level ${lv} · ${n}×${n}`;
+    renderRecords();
   }
 
   // color/creature index for a cell's patch
@@ -345,6 +347,44 @@
     checkWin();
   }
 
+  // ---------- best times ----------
+  let worldRecord = null; // { ms, name, player_id } for the current level
+  function fmtRecord(ms) {
+    const t = Math.round(ms / 100) / 10; // tenths of a second
+    const m = Math.floor(t / 60);
+    const s = (t - m * 60).toFixed(1).padStart(4, "0");
+    return `${m}:${s}`;
+  }
+  function renderRecords() {
+    const mine = save.best[level];
+    $("rec-mine").textContent = mine ? fmtRecord(mine) : "–";
+    const lb = window.Leaderboard;
+    const lvAtRequest = level;
+    $("rec-world").textContent = "–";
+    $("rec-world-name").textContent = lb.configured() ? "" : "offline";
+    worldRecord = null;
+    if (!lb.configured()) return;
+    lb.getRecord(lvAtRequest).then((rec) => {
+      if (level !== lvAtRequest) return;
+      worldRecord = rec;
+      showWorld();
+    }).catch(() => { if (level === lvAtRequest) $("rec-world-name").textContent = "couldn't load"; });
+  }
+  function showWorld() {
+    const me = window.Leaderboard.getPlayer();
+    if (!worldRecord) {
+      $("rec-world").textContent = "–";
+      $("rec-world-name").textContent = "no record yet";
+      return;
+    }
+    $("rec-world").textContent = fmtRecord(worldRecord.ms);
+    $("rec-world-name").textContent = worldRecord.player_id === me.id ? "by you!" : "by " + worldRecord.name;
+  }
+  function flashRec(id) {
+    const el = $(id).closest(".rec");
+    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  }
+
   function checkWin() {
     const placed = cells.filter((s) => s === 2).length;
     if (placed !== n) return;
@@ -356,9 +396,25 @@
     sfx.win();
     confetti();
     save.done[level] = true;
+    // Times only count when no hints were used.
+    const usedHints = hints < HINTS_PER_LEVEL;
     const prevBest = save.best[level];
-    const isBest = !prevBest || elapsed < prevBest;
-    if (isBest) save.best[level] = elapsed;
+    const isBest = !usedHints && (!prevBest || elapsed < prevBest);
+    if (isBest) { save.best[level] = elapsed; $("rec-mine").textContent = fmtRecord(elapsed); flashRec("rec-mine"); }
+    let worldNote = "";
+    const lbx = window.Leaderboard;
+    const recordPromise = (!usedHints && lbx.configured())
+      ? lbx.submitTime(level, elapsed).catch(() => false)
+      : Promise.resolve(false);
+    recordPromise.then((isWorld) => {
+      if (isWorld) {
+        worldRecord = { ms: elapsed, name: lbx.getPlayer().name || "Anonymous", player_id: lbx.getPlayer().id };
+        showWorld();
+        flashRec("rec-world");
+        worldNote = "🌍 New all-time record!";
+        const ws = $("win-stats"); if (ws && ws.dataset.ready) ws.insertAdjacentHTML("afterbegin", `<b class="world-note">${worldNote}</b><br>`);
+      }
+    });
     save.unlocked = Math.min(MAX_LEVEL, Math.max(save.unlocked, level + 1));
     save.current = Math.min(MAX_LEVEL, level + 1); // Play on the home screen goes to the next level
     writeSave();
@@ -370,8 +426,13 @@
       for (let g = 0; g < 5; g++) parade.insertAdjacentHTML("beforeend", creatureSVG(puzzle.colorOf[g]));
       const lostHearts = MAX_HEARTS - hearts;
       $("win-title").textContent = lostHearts === 0 ? "Flawless!" : "Puzzle solved!";
-      $("win-stats").innerHTML = `Time <b>${fmtTime(elapsed)}</b>${isBest && prevBest ? " · new best!" : ""}<br>` +
+      const ws = $("win-stats");
+      ws.innerHTML = (worldNote ? `<b class="world-note">${worldNote}</b><br>` : "") +
+        `Time <b>${fmtRecord(elapsed)}</b>${isBest && prevBest ? " · new personal best!" : isBest ? " · personal best set" : ""}<br>` +
+        (usedHints ? `<small>Hints used, so this time doesn't count for records.</small><br>` : "") +
+        (worldRecord && !worldNote ? `<small>All-time record ${fmtRecord(worldRecord.ms)} by ${escapeHtml(worldRecord.player_id === lbx.getPlayer().id ? "you" : worldRecord.name)}</small><br>` : "") +
         `${"❤️".repeat(hearts)}${"🤍".repeat(lostHearts)}`;
+      ws.dataset.ready = "1";
       openModal("modal-win");
     }, Math.max(1300, 120 + n * PULSE_STAGGER + 900));
   }
@@ -710,7 +771,7 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=21")
+  fetch("boards.json?v=22")
     .then((r) => r.json())
     .then((data) => {
       bank = data;
