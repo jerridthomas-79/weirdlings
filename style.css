@@ -33,7 +33,7 @@ html, body {
 body {
   position: fixed; inset: 0;
   /* cave background, shown behind every page */
-  background: var(--bg2) url("assets/bg.jpg?v=25") center / cover no-repeat;
+  background: var(--bg2) url("assets/bg.jpg?v=26") center / cover no-repeat;
 } /* stop the page bouncing/scrolling */
 
 #app {
@@ -137,9 +137,9 @@ h1 {
 }
 .cell.hover { filter: brightness(.94); }
 .cell .mark {
-  width: 62%;
-  height: 62%;
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,.12));
+  width: 88%;
+  height: 88%;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.28));
   animation: markin .15s ease-out;
 }
 @keyframes markin { from { transform: scale(.3); opacity: 0; } }
@@ -260,7 +260,7 @@ h1 {
   display: flex; align-items: center; justify-content: center;
 }
 .home-grid .tile .weirdling { width: 80%; height: 80%; overflow: visible; animation: dance .9s ease-in-out infinite alternate; }
-.home-grid .tile svg.mark { width: 55%; height: 55%; }
+.home-grid .tile svg.mark { width: 88%; height: 88%; filter: drop-shadow(0 1px 1px rgba(0,0,0,.28)); }
 .home-actions { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 10px; }
 .home-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .home-row .big-btn { font-size: 16px; margin: 0; }

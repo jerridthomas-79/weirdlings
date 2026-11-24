@@ -148,7 +148,7 @@
     return bank[bankPick(lv).idx].n;
   }
 
-  const X_SVG = `<svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><path d="M27 27 L73 73 M73 27 L27 73" stroke="#fff" stroke-width="15" stroke-linecap="round"/></svg>`;
+  const X_SVG = `<svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><path d="M14 14 L86 86 M86 14 L14 86" stroke="#fff" stroke-width="17" stroke-linecap="round"/></svg>`;
 
   // ---------- state ----------
   let level, puzzle, n, cells, hearts, hints, history, startTime, elapsed, finished, timerId;
@@ -838,7 +838,7 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=25")
+  fetch("boards.json?v=26")
     .then((r) => r.json())
     .then((data) => {
       bank = data;
