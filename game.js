@@ -125,6 +125,12 @@
 
   function puzzleForLevel(lv) {
     const { idx, sym } = bankPick(lv);
+    return puzzleFrom(idx, sym, lv * 977 + 31);
+  }
+
+  // Build a playable puzzle from bank board `idx`, rotated/flipped by `sym`,
+  // with colors shuffled by `colorSeed`.
+  function puzzleFrom(idx, sym, colorSeed) {
     const b = bank[idx];
     const n = b.n;
     const regions = new Array(n * n);
@@ -140,7 +146,7 @@
       solution[r2] = c2;
     }
     // fresh colors (and creatures) for this level
-    const colorOf = shuffled(REGION_COLORS.length, mulberry32(lv * 977 + 31)).slice(0, n);
+    const colorOf = shuffled(REGION_COLORS.length, mulberry32(colorSeed)).slice(0, n);
     return { n, regions, solution, colorOf, bankIndex: idx, sym };
   }
 
@@ -148,19 +154,54 @@
     return bank[bankPick(lv).idx].n;
   }
 
+  // ---------- Random mode ----------
+  // Any size, any board from the bank, any rotation, any colors.
+  // Doesn't touch Journey progress; times still count toward that board's records.
+  let randomSpec = null;
+  function newRandomSpec() {
+    const sizes = [...new Set(bank.map((b) => b.n))];
+    const size = sizes[Math.floor(Math.random() * sizes.length)];
+    const pool = [];
+    bank.forEach((b, i) => { if (b.n === size && (!randomSpec || i !== randomSpec.idx)) pool.push(i); });
+    return {
+      idx: pool[Math.floor(Math.random() * pool.length)],
+      sym: Math.floor(Math.random() * 8),
+      seed: 1 + Math.floor(Math.random() * 2147483000),
+    };
+  }
+
   const X_SVG = `<svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><path d="M14 14 L86 86 M86 14 L14 86" stroke="#fff" stroke-width="17" stroke-linecap="round"/></svg>`;
+
+  // "journey" = level by level, "random" = a surprise board each time
+  let gameMode = "journey";
 
   // ---------- state ----------
   let level, puzzle, n, cells, hearts, hints, history, startTime, elapsed, finished, timerId;
   let cellEls = [];
 
+  let gameId = 0; // bumps on every new/restarted board (for late network replies)
   function startLevel(lv) {
+    gameMode = "journey";
     level = lv;
     save.current = lv;
     writeSave();
     puzzle = puzzleForLevel(lv);
+    begin(lv * 7919 + 17);
+  }
+  function startRandom(spec) {
+    gameMode = "random";
+    randomSpec = spec || newRandomSpec();
+    level = 0;
+    puzzle = puzzleFrom(randomSpec.idx, randomSpec.sym, randomSpec.seed);
+    begin(randomSpec.seed * 7 + 3);
+  }
+  function restartBoard() {
+    if (gameMode === "random") startRandom(randomSpec); else startLevel(level);
+  }
+  function begin(castSeed) {
+    gameId++;
     n = puzzle.n;
-    window.Weirdlings.setCast(lv * 7919 + 17, puzzle.colorOf);
+    window.Weirdlings.setCast(castSeed, puzzle.colorOf);
     cells = new Array(n * n).fill(0); // 0 empty, 1 marked, 2 weirdling
     hearts = MAX_HEARTS;
     hints = HINTS_PER_LEVEL;
@@ -173,10 +214,14 @@
     clearInterval(timerId);
     timerId = setInterval(updateTimer, 500);
     buildBoard();
+    buildCrowd();
     renderHearts();
     updateTools();
     updateTimer();
-    $("level-label").textContent = lv > bank.length
+    const lv = level;
+    $("level-label").textContent = gameMode === "random"
+      ? `🎲 Random · ${n}×${n} · Board ${puzzle.bankIndex + 1}`
+      : lv > bank.length
       ? `Level ${lv.toLocaleString()} · ${n}×${n} · Board ${puzzle.bankIndex + 1}`
       : `Level ${lv} · ${n}×${n}`;
     renderRecords();
@@ -213,6 +258,7 @@
     if (s === 0) el.innerHTML = "";
     else if (s === 1) el.innerHTML = X_SVG;
     else el.innerHTML = creatureSVG(regionAt(i));
+    el.classList.toggle("has-w", s === 2);
     el.setAttribute("aria-label", s === 2 ? "weirdling" : s === 1 ? "marked" : "empty");
   }
 
@@ -254,6 +300,7 @@
     }
     if (step.length) history.push(step);
     updateTools();
+    updateCrowd(true);
     return step.length;
   }
 
@@ -284,6 +331,7 @@
       void boardEl.offsetWidth;
       boardEl.classList.add("shake");
       renderHearts(hearts);
+      crowdReact(puzzle.regions[i], "wince");
       setTimeout(() => {
         el.classList.remove("wrong");
         cells[i] = 1;
@@ -347,6 +395,7 @@
     cellEls[i].classList.add("hinted");
     sfx.place();
     updateTools();
+    updateCrowd(true);
     checkWin();
   }
 
@@ -374,17 +423,17 @@
     const mine = save.boardBest[boardId()];
     $("rec-mine").textContent = mine ? fmtRecord(mine) : "–";
     const lb = window.Leaderboard;
-    const lvAtRequest = level;
+    const lvAtRequest = gameId;
     const bAtRequest = boardId();
     $("rec-world").textContent = "–";
     $("rec-world-name").textContent = lb.configured() ? "" : "offline";
     worldRecord = null;
     if (!lb.configured()) return;
     lb.getRecord(bAtRequest).then((rec) => {
-      if (level !== lvAtRequest) return;
+      if (gameId !== lvAtRequest) return;
       worldRecord = rec;
       showWorld();
-    }).catch(() => { if (level === lvAtRequest) $("rec-world-name").textContent = "couldn't load"; });
+    }).catch(() => { if (gameId === lvAtRequest) $("rec-world-name").textContent = "couldn't load"; });
   }
   function showWorld() {
     const me = window.Leaderboard.getPlayer();
@@ -411,11 +460,14 @@
     celebrate();
     sfx.win();
     confetti();
-    save.done[level] = true;
+    const journey = gameMode === "journey";
     const earned = Math.max(1, hearts); // hearts left = stars earned
-    save.stars = save.stars || {};
-    const prevStars = save.stars[level] || 0;
-    if (earned > prevStars) save.stars[level] = earned;
+    if (journey) {
+      save.done[level] = true;
+      save.stars = save.stars || {};
+      const prevStars = save.stars[level] || 0;
+      if (earned > prevStars) save.stars[level] = earned;
+    }
     // Times only count when no hints were used.
     const usedHints = hints < HINTS_PER_LEVEL;
     const prevBest = save.boardBest[boardId()];
@@ -435,12 +487,17 @@
         const ws = $("win-stats"); if (ws && ws.dataset.ready) ws.insertAdjacentHTML("afterbegin", `<b class="world-note">${worldNote}</b><br>`);
       }
     });
-    save.unlocked = Math.min(MAX_LEVEL, Math.max(save.unlocked, level + 1));
-    save.current = Math.min(MAX_LEVEL, level + 1); // Play on the home screen goes to the next level
+    if (journey) {
+      save.unlocked = Math.min(MAX_LEVEL, Math.max(save.unlocked, level + 1));
+      save.current = Math.min(MAX_LEVEL, level + 1); // Play on the home screen goes to the next level
+    }
     writeSave();
-    syncScore();
+    if (journey) syncScore();
+    const winId = gameId;
     setTimeout(() => {
-      $("btn-next").hidden = level >= MAX_LEVEL;
+      if (winId !== gameId) return;
+      $("btn-next").hidden = journey && level >= MAX_LEVEL;
+      $("btn-next").textContent = journey ? "Next level →" : "New random board 🎲";
       // stars pop in one at a time
       const sw = $("win-stars");
       sw.innerHTML = starsRow(earned);
@@ -461,12 +518,13 @@
         `${"❤️".repeat(hearts)}${"🤍".repeat(lostHearts)}`;
       ws.dataset.ready = "1";
       openModal("modal-win");
-    }, Math.max(1300, 120 + n * PULSE_STAGGER + 900));
+    }, Math.max(1900, 120 + n * PULSE_STAGGER + 450 + POP_HOLD));
   }
 
   // Board-complete effect: flash the board, pulse each weirdling in turn,
   // and burst tiny copies of it outward (solid for 15px, fading over the next 10px).
   const PULSE_STAGGER = 90;
+  const POP_HOLD = 1150; // time to enjoy the board pop + crystal sparkles before the win card
   function celebrate() {
     boardEl.classList.remove("flash");
     void boardEl.offsetWidth;
@@ -512,8 +570,183 @@
     setTimeout(() => {
       placed.forEach((i) => { const w = cellEls[i].querySelector(".weirdling"); if (w) w.classList.remove("pulse"); });
       boardEl.classList.add("won");
+      boardPop();
+      crowdParty();
     }, 120 + placed.length * PULSE_STAGGER + 450);
   }
+
+  // ---------- board pop with crystal sparkles ----------
+  const GEMS = [
+    ["#E6FAFF", "#7FE0FF", "#2A9FD6", "95,215,255"],  // ice blue
+    ["#FFE3FA", "#FF7EEE", "#C23FB8", "255,110,240"], // pink
+    ["#EFE6FF", "#B49BFF", "#6F4FD6", "180,150,255"], // violet
+  ];
+  function gemSVG([hi, mid, lo]) {
+    return `<svg viewBox="-10 -13 20 26"><path d="M0 -12 L8 -3 L0 12 L-8 -3Z" fill="${mid}" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/>` +
+      `<path d="M0 -12 L-8 -3 L0 -1Z" fill="${hi}"/><path d="M0 -12 L8 -3 L0 -1Z" fill="${mid}"/>` +
+      `<path d="M-8 -3 L0 12 L0 -1Z" fill="${mid}"/><path d="M8 -3 L0 12 L0 -1Z" fill="${lo}"/>` +
+      `<path d="M-3 -8 L-5.5 -4" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+  }
+  const TWINKLE = `<svg viewBox="-10 -10 20 20"><path d="M0 -10 Q1.2 -1.2 10 0 Q1.2 1.2 0 10 Q-1.2 1.2 -10 0 Q-1.2 -1.2 0 -10Z" fill="#fff"/></svg>`;
+  function boardPop() {
+    boardEl.classList.remove("pop");
+    void boardEl.offsetWidth;
+    boardEl.classList.add("pop");
+    setTimeout(() => boardEl.classList.remove("pop"), 900);
+    if (save.sound) [1568, 2093, 2637, 3136].forEach((f, k) => tone(f, 0.22, "sine", 0.05, 0.05 + k * 0.07));
+    haptic.strong();
+    const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const rect = boardEl.getBoundingClientRect();
+    const layer = document.createElement("div");
+    layer.className = "crystal-layer";
+    document.body.appendChild(layer);
+    const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+    const count = reduce ? 12 : 48;
+    for (let k = 0; k < count; k++) {
+      const gem = GEMS[k % GEMS.length];
+      const isGem = k % 3 !== 0;
+      const el = document.createElement("div");
+      el.className = "crystal";
+      const size = isGem ? 14 + Math.random() * 14 : 16 + Math.random() * 18;
+      el.style.width = size + "px";
+      el.style.height = (isGem ? size * 1.3 : size) + "px";
+      el.innerHTML = isGem ? gemSVG(gem) : TWINKLE;
+      el.style.filter = `drop-shadow(0 1px 1px rgba(30,15,50,.55)) drop-shadow(0 0 ${Math.round(size / 2.5)}px rgba(${gem[3]},1))`;
+      // start somewhere along the board's edge, fly outward
+      const a = (k / count) * Math.PI * 2 + Math.random() * 0.3;
+      const ex = Math.cos(a), ey = Math.sin(a);
+      const edge = Math.min(rect.width / 2 / Math.abs(ex || 1e-6), rect.height / 2 / Math.abs(ey || 1e-6));
+      // burst out from inside the board; the sides of a phone screen are tight,
+      // so sideways crystals stay on screen and top/bottom ones fly further
+      const r0 = edge * (0.1 + Math.random() * 0.55);
+      const r1 = edge * (0.8 + Math.random() * 0.3) + Math.abs(ey) * (30 + Math.random() * 90);
+      const clampX = (x) => Math.max(2, Math.min(innerWidth - size - 2, x));
+      const x0 = clampX(cx + ex * r0 - size / 2), y0 = cy + ey * r0 - size / 2;
+      const x1 = clampX(cx + ex * r1 - size / 2), y1 = cy + ey * r1 - size / 2 + 20;
+      const spin = (Math.random() < 0.5 ? -1 : 1) * (120 + Math.random() * 240);
+      const dur = 900 + Math.random() * 600;
+      el.animate([
+        { transform: `translate(${x0}px, ${y0}px) scale(.2) rotate(0deg)`, opacity: 0 },
+        { transform: `translate(${(x0 + x1) / 2}px, ${(y0 + y1) / 2 - 18}px) scale(1.1) rotate(${spin / 2}deg)`, opacity: 1, offset: 0.35 },
+        { transform: `translate(${x1}px, ${y1}px) scale(.35) rotate(${spin}deg)`, opacity: 0 },
+      ], { duration: dur, delay: Math.random() * 260, easing: "cubic-bezier(.2,.7,.35,1)", fill: "both" });
+      layer.appendChild(el);
+    }
+    // a few sparkles twinkle right on the board
+    for (let k = 0; k < (reduce ? 4 : 14); k++) {
+      const gem = GEMS[k % GEMS.length];
+      const el = document.createElement("div");
+      el.className = "crystal";
+      const size = 14 + Math.random() * 18;
+      el.style.width = el.style.height = size + "px";
+      el.innerHTML = TWINKLE;
+      el.style.filter = `drop-shadow(0 0 ${Math.round(size / 3)}px rgba(${gem[3]},1))`;
+      const x = rect.left + rect.width * (0.08 + Math.random() * 0.84) - size / 2;
+      const y = rect.top + rect.height * (0.08 + Math.random() * 0.84) - size / 2;
+      el.animate([
+        { transform: `translate(${x}px, ${y}px) scale(0) rotate(0deg)`, opacity: 0 },
+        { transform: `translate(${x}px, ${y}px) scale(1) rotate(45deg)`, opacity: 1, offset: 0.5 },
+        { transform: `translate(${x}px, ${y}px) scale(0) rotate(90deg)`, opacity: 0 },
+      ], { duration: 700 + Math.random() * 300, delay: 150 + Math.random() * 700, easing: "ease-in-out", fill: "both" });
+      layer.appendChild(el);
+    }
+    setTimeout(() => layer.remove(), 2200);
+  }
+
+  // ---------- the little crowd under the board ----------
+  // One full-art weirdling per patch. They sway, lean in and blink while you play;
+  // when you find one it smiles (happy closed eyes) and starts dancing.
+  const crowdEl = $("crowd");
+  let crowd = [];      // index = patch number
+  let regionSol = [];  // patch -> the cell where its weirdling belongs
+  function buildCrowd() {
+    crowdEl.innerHTML = "";
+    crowd = [];
+    regionSol = [];
+    for (let r = 0; r < n; r++) regionSol[puzzle.regions[r * n + puzzle.solution[r]]] = r * n + puzzle.solution[r];
+    const cast = window.Weirdlings.getCast();
+    const two = n > 7;
+    const back = document.createElement("div");
+    const front = document.createElement("div");
+    back.className = "crowd-row back";
+    front.className = "crowd-row front";
+    if (two) crowdEl.appendChild(back);
+    crowdEl.appendChild(front);
+    for (let r = 0; r < n; r++) {
+      const c = cast[puzzle.colorOf[r]];
+      const ar = Math.min(1.5, c.w / c.h);
+      const m = document.createElement("div");
+      m.className = "cm";
+      m.style.setProperty("--ar", ar.toFixed(3));
+      m.style.setProperty("--dur", (2.1 + Math.random() * 1.3).toFixed(2) + "s");
+      m.style.setProperty("--delay", (-Math.random() * 3).toFixed(2) + "s");
+      m.style.setProperty("--hop", (0.42 + Math.random() * 0.16).toFixed(2) + "s");
+      const lids = c.eyes.map(([x, y, rad, col]) => {
+        const rr = rad * 1.12;
+        return `<span class="lid" style="left:${(x - rr).toFixed(2)}%;top:${(y - rr * c.w / c.h).toFixed(2)}%;width:${(rr * 2).toFixed(2)}%;--lid:${col}"></span>`;
+      }).join("");
+      m.innerHTML = `<div class="cm-sway"><div class="cm-body"><img src="${c.hero}" alt="" draggable="false">${lids}</div></div>`;
+      (two && r % 2 === 1 ? back : front).appendChild(m);
+      crowd.push({ el: m, ar, found: false, eyes: c.eyes.length > 0 });
+    }
+    layoutCrowd();
+    updateCrowd(false);
+  }
+  function layoutCrowd() {
+    if (!crowd.length) return;
+    const W = crowdEl.clientWidth || Math.min(innerWidth - 20, 560);
+    const H = crowdEl.clientHeight;
+    crowdEl.classList.toggle("tiny", H < 30);
+    const two = crowd.length > 7;
+    const sum = (list) => list.reduce((t, c) => t + c.ar, 0) * 0.9;
+    const frontList = crowd.filter((_, r) => !two || r % 2 === 0);
+    const backList = two ? crowd.filter((_, r) => r % 2 === 1) : [];
+    let h = Math.min(H / (two ? 1.42 : 1), W / sum(frontList), two ? W / (sum(backList) * 0.8) : Infinity);
+    h = Math.max(0, Math.floor(h));
+    crowdEl.style.setProperty("--h", h + "px");
+  }
+  if (window.ResizeObserver) new ResizeObserver(layoutCrowd).observe(crowdEl);
+  else addEventListener("resize", layoutCrowd);
+
+  function updateCrowd(announce) {
+    crowd.forEach((c, r) => {
+      const found = cells[regionSol[r]] === 2;
+      if (found === c.found) return;
+      c.found = found;
+      c.el.classList.toggle("found", found);
+      if (found && announce) {
+        crowdReact(r, "just-found", 700);
+        crowdReact(r, "happy", 1500);
+      }
+    });
+  }
+  function crowdReact(r, cls, ms = 650) {
+    const c = crowd[r];
+    if (!c) return;
+    const body = c.el;
+    body.classList.remove(cls);
+    void body.offsetWidth;
+    body.classList.add(cls);
+    clearTimeout(c[cls]);
+    c[cls] = setTimeout(() => body.classList.remove(cls), ms);
+  }
+  function crowdParty() {
+    crowd.forEach((c, r) => { c.el.classList.add("found", "party"); setTimeout(() => crowdReact(r, "happy", 2600), r * 60); });
+  }
+  // idle life: random blinks and an occasional lean toward you
+  setInterval(() => {
+    if (!crowd.length || $("app").hidden || document.hidden) return;
+    const r = Math.floor(Math.random() * crowd.length);
+    const c = crowd[r];
+    if (c.eyes && !c.el.classList.contains("happy")) crowdReact(r, "blink", 260);
+    if (Math.random() < 0.3) {
+      const r2 = Math.floor(Math.random() * crowd.length);
+      if (!crowd[r2].found) {
+        crowd[r2].el.style.setProperty("--lean", (r2 < crowd.length / 2 ? 1 : -1) * 7 + "deg");
+        crowdReact(r2, "lean", 1300);
+      }
+    }
+  }, 520);
 
   function lose() {
     finished = true;
@@ -683,7 +916,7 @@
       if (save.done[lv]) b.classList.add("done");
       if (lv === Math.min(save.current || 1, save.unlocked)) b.classList.add("current");
       b.disabled = lv > save.unlocked;
-      b.addEventListener("click", () => { closeModal("modal-levels"); showGame(lv); });
+      b.addEventListener("click", () => { closeModal("modal-levels"); setMode("journey"); showGame(lv); });
       grid.appendChild(b);
     }
     openModal("modal-levels");
@@ -693,7 +926,7 @@
 
   // ---------- buttons ----------
   $("btn-hint").addEventListener("click", hint);
-  $("btn-restart").addEventListener("click", () => startLevel(level));
+  $("btn-restart").addEventListener("click", restartBoard);
   $("btn-help").addEventListener("click", showHelp);
   // ---------- leaderboard ----------
   const LB = window.Leaderboard;
@@ -840,12 +1073,28 @@
     });
   }
 
+  function getMode() { return save.mode === "random" ? "random" : "journey"; }
+  function setMode(m) {
+    save.mode = m;
+    writeSave();
+    $("mode-journey").classList.toggle("on", m === "journey");
+    $("mode-random").classList.toggle("on", m === "random");
+    $("mode-journey").setAttribute("aria-checked", m === "journey");
+    $("mode-random").setAttribute("aria-checked", m === "random");
+    if (!$("home").hidden && bank.length) refreshHome();
+  }
   function refreshHome() {
     const lv = Math.min(save.current || 1, save.unlocked);
-    const inProgress = puzzle && level === lv && !finished && cells.some((s) => s !== 0);
+    const random = getMode() === "random";
+    const inProgress = puzzle && !finished && cells.some((s) => s !== 0) &&
+      (random ? gameMode === "random" : gameMode === "journey" && level === lv);
     $("play-label").textContent = inProgress ? "Continue" : "Play";
-    const n = sizeForLevel(lv);
-    $("play-sub").textContent = `Level ${lv} · ${n}×${n}`;
+    if (random) {
+      $("play-sub").textContent = inProgress ? `Random board · ${puzzle.n}×${puzzle.n}` : "Random board · any size";
+    } else {
+      const n = sizeForLevel(lv);
+      $("play-sub").textContent = `Level ${lv} · ${n}×${n}`;
+    }
     const solved = totalCompleted();
     $("home-stats").textContent = solved ? `${solved.toLocaleString()} level${solved === 1 ? "" : "s"} completed` : "";
   }
@@ -878,7 +1127,10 @@
   function showGame(lv) {
     $("home").hidden = true;
     $("app").hidden = false;
-    if (lv !== undefined && (lv !== level || finished || !puzzle)) {
+    if (lv === "random") {
+      if (gameMode !== "random" || finished || !puzzle) { paused = false; startRandom(); }
+      else if (paused) { paused = false; startTime = Date.now() - elapsed; }
+    } else if (lv !== undefined && (gameMode !== "journey" || lv !== level || finished || !puzzle)) {
       paused = false;
       startLevel(lv);
     } else if (paused) {
@@ -892,7 +1144,11 @@
     }
   }
 
-  $("btn-play").addEventListener("click", () => showGame(Math.min(save.current || 1, save.unlocked)));
+  $("btn-play").addEventListener("click", () =>
+    showGame(getMode() === "random" ? "random" : Math.min(save.current || 1, save.unlocked)));
+  $("mode-journey").addEventListener("click", () => { setMode("journey"); haptic.light(); });
+  $("mode-random").addEventListener("click", () => { setMode("random"); haptic.light(); });
+  setMode(getMode());
   $("btn-home-levels").addEventListener("click", showLevels);
   $("btn-home-help").addEventListener("click", showHelp);
   $("btn-home").addEventListener("click", showHome);
@@ -901,15 +1157,22 @@
   function renderHaptics() { hapticsBtn.classList.toggle("off", !save.haptics); renderToggleIcons(); }
   hapticsBtn.addEventListener("click", () => { save.haptics = !save.haptics; writeSave(); renderHaptics(); haptic.light(); });
   renderHaptics();
-  $("btn-next").addEventListener("click", () => { closeModal("modal-win"); startLevel(Math.min(MAX_LEVEL, level + 1)); });
-  $("btn-retry").addEventListener("click", () => { closeModal("modal-lose"); startLevel(level); });
+  $("btn-next").addEventListener("click", () => {
+    closeModal("modal-win");
+    if (gameMode === "random") startRandom(); else startLevel(Math.min(MAX_LEVEL, level + 1));
+  });
+  $("btn-retry").addEventListener("click", () => { closeModal("modal-lose"); restartBoard(); });
   const soundBtn = $("btn-sound");
   function renderSound() { soundBtn.classList.toggle("off", !save.sound); renderToggleIcons(); }
   soundBtn.addEventListener("click", () => { save.sound = !save.sound; writeSave(); renderSound(); });
   renderSound();
 
 
-  window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
+  window.__weirdlings = { // for testing
+    puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv),
+    current: () => ({ mode: gameMode, n, solution: puzzle && puzzle.solution, regions: puzzle && puzzle.regions }),
+    startRandom: (spec) => { showGame("random"); startRandom(spec); },
+  };
 
   // ---------- go ----------
   fetch("boards.json?v=33")

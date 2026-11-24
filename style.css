@@ -535,3 +535,146 @@ h1 {
   animation: fall linear forwards;
 }
 @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+/* ===================== Nov 2026 tweaks ===================== */
+
+/* 1. darker drop shadow under the ✕ marks */
+.cell .mark,
+.home-grid .tile svg.mark {
+  filter: drop-shadow(0 2px 1.5px rgba(25, 12, 45, .62)) drop-shadow(0 0 1px rgba(25, 12, 45, .35));
+}
+
+/* 4. board markers: just a bit bigger than their tile, with a dark drop shadow */
+.cell.has-w { z-index: 2; }
+.cell .weirdling {
+  width: 110%;
+  height: 110%;
+  flex: none;
+  filter: drop-shadow(0 3px 2.5px rgba(25, 12, 45, .6));
+}
+.cell .img-weirdling.sad { filter: grayscale(.7) brightness(.85) drop-shadow(0 3px 2.5px rgba(25, 12, 45, .6)) !important; }
+.home-grid .tile .weirdling {
+  width: 110%; height: 110%; flex: none;
+  filter: drop-shadow(0 3px 2.5px rgba(25, 12, 45, .6));
+}
+
+/* 5. board complete: the whole board pops, crystals sparkle out of it */
+.board.pop { animation: boardpop .85s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes boardpop {
+  0%   { transform: scale(1); }
+  28%  { transform: scale(1.085); box-shadow: 0 6px 0 rgba(0,0,0,.22), 0 0 34px 10px rgba(140, 220, 255, .85), 0 0 70px 24px rgba(255, 120, 240, .45); }
+  55%  { transform: scale(.975); }
+  78%  { transform: scale(1.015); }
+  100% { transform: scale(1); }
+}
+.crystal-layer { position: fixed; inset: 0; pointer-events: none; z-index: 8; overflow: hidden; }
+.crystal { position: absolute; left: 0; top: 0; will-change: transform, opacity; }
+.crystal svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* 3. Journey / Random picker on the home screen */
+.mode-pick {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  padding: 5px;
+  background: rgba(15, 10, 35, .6);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 20px;
+}
+.mode-btn {
+  display: flex; align-items: center; gap: 8px;
+  border: none; border-radius: 15px;
+  padding: 7px 10px 7px 6px;
+  font: inherit; font-size: 17px; font-weight: 900; text-align: left; line-height: 1.1;
+  color: rgba(255, 248, 238, .75);
+  background: transparent;
+  cursor: pointer; touch-action: manipulation;
+  transition: background .2s, color .2s, transform .12s;
+}
+.mode-btn small { display: block; font-size: 11.5px; font-weight: 700; opacity: .8; }
+.mode-btn .mode-icon { width: 36px; height: 36px; flex: none; opacity: .6; transition: opacity .2s, transform .25s; }
+.mode-btn.on { background: var(--paper); color: var(--ink); box-shadow: 0 3px 0 #c9bba5; }
+.mode-btn.on .mode-icon { opacity: 1; transform: rotate(-6deg) scale(1.08); }
+.mode-btn:active { transform: scale(.97); }
+
+/* 6. the little crowd of weirdlings under the board */
+#app .board-wrap { flex: 1 0 auto; }
+.crowd {
+  --h: 60px;
+  position: relative;
+  width: var(--board-size);
+  flex: 0 1 120px;
+  min-height: 0;
+  pointer-events: none;
+}
+.crowd.tiny { visibility: hidden; }
+.crowd-row {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; justify-content: center; align-items: flex-end;
+}
+.crowd-row.back { bottom: calc(var(--h) * .42); --s: .8; z-index: 0; filter: brightness(.9); }
+.crowd-row.front { z-index: 1; }
+.cm {
+  --hh: calc(var(--h) * var(--s, 1));
+  position: relative;
+  height: var(--hh);
+  width: calc(var(--hh) * var(--ar));
+  margin: 0 calc(var(--hh) * var(--ar) * -0.05);
+  flex: none;
+}
+.cm-sway, .cm-body { width: 100%; height: 100%; position: relative; transform-origin: 50% 100%; }
+.cm-sway { animation: cm-sway var(--dur) ease-in-out var(--delay) infinite alternate; }
+.cm-body img {
+  width: 100%; height: 100%; display: block; object-fit: fill;
+  filter: drop-shadow(0 3px 3px rgba(20, 10, 40, .6));
+  -webkit-user-drag: none;
+}
+.cm:not(.found) .cm-body img { filter: saturate(.8) brightness(.88) drop-shadow(0 3px 3px rgba(20, 10, 40, .6)); }
+/* gentle sway, heads tipping toward you */
+@keyframes cm-sway {
+  0%   { transform: rotate(-4deg) translateY(0); }
+  50%  { transform: rotate(0deg) translateY(-2%) scale(1.02); }
+  100% { transform: rotate(4deg) translateY(0); }
+}
+.cm.lean .cm-body { animation: cm-lean 1.3s ease-in-out; }
+@keyframes cm-lean {
+  0%, 100% { transform: none; }
+  35%, 70% { transform: rotate(var(--lean, 6deg)) scale(1.12) translateY(-3%); }
+}
+/* found: pop, then dance */
+.cm.found .cm-sway { animation: cm-dance var(--hop) ease-in-out infinite alternate; }
+@keyframes cm-dance {
+  from { transform: translateY(0) rotate(-7deg) scale(1, .96); }
+  to   { transform: translateY(-16%) rotate(7deg) scale(.98, 1.03); }
+}
+.cm.party .cm-sway { animation-duration: .32s; }
+.cm.just-found .cm-body { animation: cm-pop .7s cubic-bezier(.3, 1.8, .5, 1); }
+@keyframes cm-pop { 0% { transform: scale(1); } 30% { transform: scale(1.35) translateY(-8%); } 100% { transform: scale(1); } }
+.cm.wince .cm-body { animation: cm-wince .6s ease-in-out; }
+@keyframes cm-wince {
+  20% { transform: translateX(-6%) rotate(-6deg) scale(.95); } 40% { transform: translateX(6%) rotate(6deg) scale(.95); }
+  60% { transform: translateX(-4%) rotate(-3deg); } 80% { transform: translateX(3%); }
+}
+/* eyelids: blink, and closed happy "smile" eyes */
+.lid {
+  position: absolute; aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 25%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%), var(--lid);
+  box-shadow: inset 0 -1px 1px rgba(30, 15, 40, .45);
+  transform: scaleY(0); transform-origin: 50% 0;
+}
+.cm.blink .lid, .cm.wince .lid { animation: cm-blink .26s ease-in-out; }
+@keyframes cm-blink { 0%, 100% { transform: scaleY(0); } 45%, 55% { transform: scaleY(1); } }
+.cm.happy .lid { animation: none; transform: scaleY(1); transition: transform .12s; }
+.cm.happy .lid::after {
+  content: ""; position: absolute;
+  inset: 8%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M3 13 Q10 3 17 13' fill='none' stroke='%232B2340' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-sway, .cm.found .cm-sway { animation: none; }
+}
+/* tighten the game screen a little to make room for the crowd */
+#app { gap: 8px; }
+#app .tools { margin-top: 2px; }
+#app .tool { padding: 9px 4px; }

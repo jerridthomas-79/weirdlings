@@ -1,20 +1,22 @@
 // Original Weirdling creature art, drawn as inline SVG.
 (function (root) {
+  // Colors were re-tuned (Nov 2026) in OKLCH so neighbours like orange/mustard,
+  // blue/slate, green/lime and pink/magenta are more saturated and easier to tell apart.
   // tile = square color, light = square behind a placed weirdling, body = creature
   const REGION_COLORS = [
-    { tile: "#F5A3C0", light: "#FDE3EC", body: "#FF5C8A" }, // pink
-    { tile: "#FDAA6B", light: "#FFE6D1", body: "#FF8A1F" }, // orange
-    { tile: "#E5B94A", light: "#FBEFC9", body: "#E0A800" }, // mustard
-    { tile: "#7CCB6B", light: "#DDF3D6", body: "#38A84A" }, // green
-    { tile: "#4AB8B4", light: "#D3F0EF", body: "#129C97" }, // teal
-    { tile: "#6CBAE8", light: "#DCEFFA", body: "#2F8FD6" }, // blue
-    { tile: "#9B7EDB", light: "#E7DFF8", body: "#7A4FE0" }, // purple
-    { tile: "#B07350", light: "#EEDCCF", body: "#9A5A33" }, // brown
-    { tile: "#A8BCD6", light: "#E7EDF5", body: "#5F7896" }, // slate
-    { tile: "#E8635F", light: "#FADAD9", body: "#D9302B" }, // red
-    { tile: "#B9D454", light: "#EFF6D2", body: "#86B012" }, // lime
-    { tile: "#E486BE", light: "#F8DDEE", body: "#C93AA6" }, // magenta
-    { tile: "#D4B89A", light: "#F4EBE1", body: "#A97E54" }, // sand
+    { tile: "#FFA9CA", light: "#FFE2EC", body: "#E177A1" }, // pink
+    { tile: "#FF8D44", light: "#FFE5D7", body: "#E05900" }, // orange
+    { tile: "#F2BB25", light: "#F6EAD1", body: "#CF8E00" }, // mustard
+    { tile: "#44BE56", light: "#DDF2DE", body: "#00980C" }, // green
+    { tile: "#00B3AC", light: "#D2F3F0", body: "#008F89" }, // teal
+    { tile: "#40A7EE", light: "#D8EFFF", body: "#007ED2" }, // blue
+    { tile: "#946CDB", light: "#EEE7FF", body: "#713ABE" }, // purple
+    { tile: "#AA6743", light: "#FFE5D7", body: "#8C3800" }, // brown
+    { tile: "#99B2DE", light: "#DFECFF", body: "#6889C6" }, // slate
+    { tile: "#ED5350", light: "#FFE3DF", body: "#C90019" }, // red
+    { tile: "#AFE74B", light: "#E5F0D7", body: "#82BE00" }, // lime
+    { tile: "#D55FB8", light: "#FCE3F3", body: "#B12195" }, // magenta
+    { tile: "#E2C69B", light: "#F8E9D2", body: "#C29A5A" }, // sand
   ];
 
   const INK = "#2B2340";
@@ -95,7 +97,31 @@
   // when a color has no creature of its own (pink, brown) or is already taken.
   // Color index: 0 pink 1 orange 2 mustard 3 green 4 teal 5 blue 6 purple
   // 7 brown 8 slate 9 red 10 lime 11 magenta 12 sand
-  const ART_V = 4;
+  // Full-art sizes and eye spots (percent of width/height, radius in % of width,
+  // eyelid color) so the little creatures under the board can blink and smile.
+  const HERO_META = {
+    c01: { w: 692, h: 508, eyes: [[47.5,14,9.5,"#FFD9C4"],[69,41,5,"#D8A06E"]] },
+    c02: { w: 702, h: 510, eyes: [[37.5,23,6.5,"#D5A3B3"],[19,35,3.5,"#E3AFA6"],[63,22,7,"#BF7AA5"],[79,34,3,"#E3AFA6"]] },
+    c03: { w: 720, h: 492, eyes: [[45,43,11.5,"#708399"]] },
+    c04: { w: 840, h: 828, eyes: [[46,39,7,"#E2A443"],[74,38,5.5,"#E2A443"]] },
+    c05: { w: 786, h: 840, eyes: [[60,29,8,"#3FB3A6"],[94,29,5,"#3FB3A6"]] },
+    c06: { w: 800, h: 840, eyes: [[54,29,10,"#B8798A"]] },
+    c07: { w: 840, h: 670, eyes: [[43,30,7.5,"#8DAA34"],[79,31,6,"#8DAA34"]] },
+    c09: { w: 806, h: 840, eyes: [[55,40,6.5,"#9A9A52"],[76,40,5,"#9A9A52"]] },
+    c10: { w: 840, h: 820, eyes: [[49,38,8.5,"#D7A475"],[72,35,7.5,"#EEBC91"]] },
+    c11: { w: 836, h: 840, eyes: [[55,31,9,"#D0A070"],[82,29,7,"#D7A48D"]] },
+    c12: { w: 840, h: 783, eyes: [[77,31,4.5,"#CCAE82"],[91,28,3,"#E6D9C2"]] },
+    c13: { w: 818, h: 840, eyes: [[79,30,5,"#C4856F"],[90,27.5,3,"#E6D7BE"]] },
+    c14: { w: 840, h: 839, eyes: [[69,30,2.5,"#3D5A80"]] },
+    c17: { w: 840, h: 830, eyes: [[70,40,8,"#EECA5D"],[91,39,5.5,"#F4CC5F"]] },
+    c18: { w: 835, h: 840, eyes: [] },
+    c19: { w: 828, h: 840, eyes: [[70,45,4.5,"#D9433B"],[85,47,3,"#BA433F"]] },
+    c20: { w: 798, h: 840, eyes: [[78,18,2.5,"#9599B1"]] },
+    c23: { w: 835, h: 840, eyes: [[71,24,2,"#1B2B49"]] },
+    c24: { w: 840, h: 829, eyes: [] },
+  };
+  const HERO_META_get = (id) => HERO_META[id] || { w: 1, h: 1, eyes: [] };
+  const ART_V = 5;
   const CREATURES = [
     { id: "c01", colors: [8, 12] },      // shaggy one-eyed sad fluff
     { id: "c02", colors: [11, 0] },      // two-headed bird
@@ -116,7 +142,7 @@
     { id: "c20", colors: [5] },          // shell heron
     { id: "c23", colors: [5, 6] },       // cosmic whale
     { id: "c24", colors: [6, 5] },       // night-sky whale
-  ].map((c) => ({ ...c,
+  ].map((c) => ({ ...c, ...(HERO_META_get(c.id)),
     img: `assets/creatures/${c.id}.webp?v=${ART_V}`,
     hero: `assets/heroes/${c.id}.webp?v=${ART_V}` }));
 
@@ -191,7 +217,7 @@
       (d.front || "") + cheeks + eyes + mouth + `</svg>`;
   }
 
-  const api = { REGION_COLORS, DESIGNS, CREATURES, creatureSVG, makeCast, setCast, INK };
+  const api = { REGION_COLORS, DESIGNS, CREATURES, creatureSVG, makeCast, setCast, getCast: () => currentCast, INK };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Weirdlings = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -12,13 +12,13 @@ no two may touch, even diagonally. Every board has exactly one solution.
 ## Files
 | File | What it does |
 |---|---|
-| `index.html` | All screens: home (`#home`), game (`#app`), modals (help, win, lose, levels, menu, leaderboard) |
+| `index.html` | All screens: home (`#home`, with the Journey/Random picker), game (`#app`, with the `#crowd` strip under the tools), modals (help, win, lose, levels, menu, leaderboard) |
 | `style.css` | All styling and animations |
 | `game.js` | Game logic, input, haptics, sound, home screen, menu, stars, records, win effects, UI icons (`UI_ICONS`) |
 | `puzzle.js` | Puzzle generator and solver (only used by `tools/build-boards.js` and tests) |
 | `boards.json` | The bank of 200 boards in level order: 5×5 (12), 6×6 (16), 7×7 (20), 8×8 (22), 9×9 (24), 10×10 (26), 11×11 (26), 12×12 (27), 13×13 (27) |
 | `tools/build-boards.js` | Rebuilds `boards.json` (slow for 12×12/13×13; run sizes in parallel) |
-| `creatures.js` | `REGION_COLORS` (13 colors), `CREATURES` (owner's art library), `makeCast()`/`setCast()`, `creatureSVG()`; old SVG `DESIGNS` kept only as a fallback |
+| `creatures.js` | `REGION_COLORS` (13 colors), `CREATURES` (owner's art library), `HERO_META` (full-art size + eye spots/eyelid colors for the crowd), `makeCast()`/`setCast()`/`getCast()`, `creatureSVG()`; old SVG `DESIGNS` kept only as a fallback |
 | `bgfx.js` | Twinkling/glowing crystals over the background on every page |
 | `leaderboard.js` | Supabase REST calls (leaderboard + board records), no library |
 | `config.js` | Supabase URL + publishable key (public by design) |
@@ -30,7 +30,18 @@ no two may touch, even diagonally. Every board has exactly one solution.
   rotated/flipped (7 transforms) and recolored. Level cap is **99,999**.
 - Best times and all-time records belong to the **board** (1–200), not the level number,
   so remixes share them (`boardId() = puzzle.bankIndex + 1`).
-- Colors per level are a seeded shuffle of the 13 colors (`colorOf`).
+- Colors per level are a seeded shuffle of the 13 colors (`colorOf`). The 13 colors were re-tuned
+  in OKLCH (owner: "colors too similar") so close pairs (orange/mustard, blue/slate, green/lime,
+  pink/magenta, teal/blue) are more saturated; keep the minimum OKLab distance around 0.1 if you change them.
+
+## Modes (home screen picker, saved as `save.mode`)
+- **Journey**: level by level, as above. Only Journey wins change progress, stars and the leaderboard total.
+- **Random**: `startRandom()` picks any size, then any bank board of that size, any of the 8
+  rotations/flips, and random colors (`randomSpec = {idx, sym, seed}`). Restart/Try again replay the
+  same spec; the win card's button is "New random board". Times still count for that board's
+  records (records belong to the board). Choosing a level in the Levels list switches back to Journey.
+- `startLevel()`/`startRandom()` both go through `begin()`; `gameId` bumps per board so late
+  Supabase replies and win timers for an old board are ignored.
 
 ## Creatures (owner's art, 19 so far)
 - Every creature is the owner's image, numbered like their files (`creature_11.png` → `c11`).
@@ -64,9 +75,19 @@ no two may touch, even diagonally. Every board has exactly one solution.
 ## Look (owner-specified)
 - Board: rounded colored tiles with small gaps inside a white rounded frame, strong drop
   shadow. No dark patch outlines. **No glass effect** (owner removed it).
-- ✕ marks: bold white, nearly tile-wide, tiny drop shadow. Tile keeps its color under a creature.
+- ✕ marks: bold white, nearly tile-wide, dark drop shadow. Tile keeps its color under a creature.
+- Board markers are 110% of their tile (just bigger than the tile) with a dark drop shadow;
+  `.cell.has-w` lifts that tile above its neighbours.
 - Board complete: white flash, each creature pulses in turn and bursts 8 mini copies
-  (solid for 15px, fading over the next 10px), then dance, confetti, win modal.
+  (solid for 15px, fading over the next 10px), then the board pops (`.board.pop`) while crystal
+  gems and twinkles (`boardPop()`, pink/ice-blue/violet like the cave crystals) burst out of it,
+  creatures dance, confetti, win modal (`POP_HOLD` gives the pop time before the card).
+- Crowd under the board (`#crowd`): one small full-art creature per patch (two staggered rows above
+  7). They sway, sometimes lean toward you, and blink (eyelid spots from `HERO_META.eyes`: x%, y%,
+  radius % of width, lid color). When a patch's weirdling is found its creature pops, "smiles"
+  (happy closed-eye arcs) and keeps dancing; unfound ones are slightly dimmed; a wrong guess makes
+  that patch's creature wince; on a win they all party. The crowd shrinks (and hides under 30px)
+  on short screens so the board never shrinks for it. c18 (sleeping sloth) and c24 have no lids.
 - Stars: 3 = no mistakes, 2 = one, 1 = two. 3D gold twinkling stars on the win screen;
   best stars per level shown in the level chooser (saved per device).
 - Icons: custom cartoon SVGs (thick #2B2340 outline, bright fills): Levels, Leaderboard,
