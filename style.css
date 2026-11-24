@@ -33,7 +33,7 @@ html, body {
 body {
   position: fixed; inset: 0;
   /* cave background, shown behind every page */
-  background: var(--bg2) url("assets/bg.jpg?v=26") center / cover no-repeat;
+  background: var(--bg2) url("assets/bg.jpg?v=27") center / cover no-repeat;
 } /* stop the page bouncing/scrolling */
 
 #app {
@@ -266,7 +266,11 @@ h1 {
 .home-row .big-btn { font-size: 16px; margin: 0; }
 .home-row.three { grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .home-row.three .big-btn { font-size: 13px; padding: 10px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.1; }
-.home-row.three .big-btn span { font-size: 22px; }
+.home-row.three .big-btn span { font-size: 22px; line-height: 0; }
+.ui-icon { width: 40px; height: 40px; overflow: visible; filter: drop-shadow(0 2px 0 rgba(0,0,0,.12)); }
+.home-row.three .big-btn .ui-icon { width: 42px; height: 42px; margin-bottom: 2px; transition: transform .15s; }
+.home-row.three .big-btn:active .ui-icon { transform: scale(.9) rotate(-6deg); }
+.menu-item .ui-icon { width: 30px; height: 30px; }
 
 /* menu */
 .menu-list { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 12px; }
@@ -278,7 +282,7 @@ h1 {
   font: inherit; font-size: 17px; font-weight: 800; text-align: left;
   cursor: pointer; touch-action: manipulation;
 }
-.menu-item span { font-size: 22px; width: 28px; text-align: center; }
+.menu-item span { font-size: 22px; width: 30px; text-align: center; line-height: 0; display: flex; justify-content: center; }
 .menu-item b { margin-left: auto; color: var(--accent); }
 .menu-item:active { transform: scale(.98); }
 

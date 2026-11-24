@@ -838,7 +838,7 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=26")
+  fetch("boards.json?v=27")
     .then((r) => r.json())
     .then((data) => {
       bank = data;
