@@ -411,6 +411,10 @@
     sfx.win();
     confetti();
     save.done[level] = true;
+    const earned = Math.max(1, hearts); // hearts left = stars earned
+    save.stars = save.stars || {};
+    const prevStars = save.stars[level] || 0;
+    if (earned > prevStars) save.stars[level] = earned;
     // Times only count when no hints were used.
     const usedHints = hints < HINTS_PER_LEVEL;
     const prevBest = save.boardBest[boardId()];
@@ -436,6 +440,13 @@
     syncScore();
     setTimeout(() => {
       $("btn-next").hidden = level >= MAX_LEVEL;
+      // stars pop in one at a time
+      const sw = $("win-stars");
+      sw.innerHTML = starsRow(earned);
+      [...sw.children].forEach((s, k) => {
+        s.style.animationDelay = (0.25 + k * 0.28) + "s";
+        if (k < earned) setTimeout(() => { if (save.sound) tone(880 + k * 220, 0.18, "triangle", 0.1); haptic.light(); }, 250 + k * 280);
+      });
       const parade = $("win-parade");
       parade.innerHTML = "";
       for (let g = 0; g < 5; g++) parade.insertAdjacentHTML("beforeend", creatureSVG(puzzle.colorOf[g]));
@@ -620,13 +631,54 @@
     openModal("modal-help");
   }
 
+  // ---------- stars ----------
+  // 3 stars = no mistakes, 2 = one mistake, 1 = two mistakes (three is game over).
+  let starUid = 0;
+  function starSVG(filled, opts = {}) {
+    const id = "st" + (++starUid);
+    const cx = 50, cy = 53, R = 46, r = 20;
+    const pts = [];
+    for (let k = 0; k < 10; k++) {
+      const a = (-90 + k * 36) * Math.PI / 180;
+      const rad = k % 2 === 0 ? R : r;
+      pts.push([cx + Math.cos(a) * rad, cy + Math.sin(a) * rad]);
+    }
+    // two facets per arm (one lit, one shaded) give the bevelled 3D look
+    const light = filled ? `url(#${id}l)` : "#ddd3c4";
+    const dark = filled ? `url(#${id}d)` : "#b8ab98";
+    let faces = "";
+    for (let k = 0; k < 10; k++) {
+      const p1 = pts[k], p2 = pts[(k + 1) % 10];
+      faces += `<path d="M${cx} ${cy} L${p1[0].toFixed(1)} ${p1[1].toFixed(1)} L${p2[0].toFixed(1)} ${p2[1].toFixed(1)}Z" fill="${k % 2 === 0 ? dark : light}"/>`;
+    }
+    const outline = "M" + pts.map((p) => p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" L") + "Z";
+    const sparkle = (x, y, s, d) => `<path class="sparkle" style="animation-delay:${d}s" transform="translate(${x} ${y}) scale(${s})" d="M0 -10 Q1.5 -1.5 10 0 Q1.5 1.5 0 10 Q-1.5 1.5 -10 0 Q-1.5 -1.5 0 -10Z" fill="#fff"/>`;
+    return `<svg class="star3d ${filled ? "on" : "off"}" viewBox="-6 -6 112 112" aria-hidden="true">` +
+      (filled ? `<defs>
+        <linearGradient id="${id}l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF6B0"/><stop offset="1" stop-color="#FFC83D"/></linearGradient>
+        <linearGradient id="${id}d" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB627"/><stop offset="1" stop-color="#E07B00"/></linearGradient>
+      </defs>` : "") +
+      `<path d="${outline}" fill="rgba(0,0,0,.25)" transform="translate(0 4)"/>` +
+      faces +
+      `<path d="${outline}" fill="none" stroke="${filled ? "#B35C00" : "#9c8f7c"}" stroke-width="3" stroke-linejoin="round"/>` +
+      (filled && !opts.still ? `<path class="shine" d="${outline}" fill="#fff"/>` + sparkle(78, 14, .9, opts.delay || 0) + sparkle(18, 30, .6, (opts.delay || 0) + .7) + sparkle(70, 80, .5, (opts.delay || 0) + 1.3) : "") +
+      `</svg>`;
+  }
+  function starsRow(count, opts = {}) {
+    let h = "";
+    for (let k = 0; k < 3; k++) h += starSVG(k < count, { ...opts, delay: k * 0.4 });
+    return h;
+  }
+
   function showLevels() {
     const grid = $("level-grid");
     grid.innerHTML = "";
     const shown = Math.min(MAX_LEVEL, Math.max(30, Math.ceil((save.unlocked + 10) / 5) * 5));
     for (let lv = 1; lv <= shown; lv++) {
       const b = document.createElement("button");
-      b.innerHTML = `${lv}<small>${sizeForLevel(lv)}×${sizeForLevel(lv)}</small>`;
+      const st = (save.stars || {})[lv];
+      b.innerHTML = `${lv}<small>${sizeForLevel(lv)}×${sizeForLevel(lv)}</small>` +
+        (st ? `<span class="lvl-stars${st === 3 ? " perfect" : ""}">${starsRow(st, { still: true })}</span>` : save.done[lv] ? `<span class="lvl-stars done-check">✓</span>` : "");
       if (save.done[lv]) b.classList.add("done");
       if (lv === Math.min(save.current || 1, save.unlocked)) b.classList.add("current");
       b.disabled = lv > save.unlocked;
@@ -786,7 +838,7 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=24")
+  fetch("boards.json?v=25")
     .then((r) => r.json())
     .then((data) => {
       bank = data;

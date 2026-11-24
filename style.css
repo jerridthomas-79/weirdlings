@@ -33,7 +33,7 @@ html, body {
 body {
   position: fixed; inset: 0;
   /* cave background, shown behind every page */
-  background: var(--bg2) url("assets/bg.jpg?v=24") center / cover no-repeat;
+  background: var(--bg2) url("assets/bg.jpg?v=25") center / cover no-repeat;
 } /* stop the page bouncing/scrolling */
 
 #app {
@@ -322,6 +322,33 @@ h1 {
 .lb-list .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lb-list .lv { font-variant-numeric: tabular-nums; }
 .world-note { color: #d6336c; font-size: 18px; }
+/* ---- 3D stars ---- */
+.star3d { overflow: visible; }
+.star3d .sparkle { transform-box: fill-box; transform-origin: center; opacity: 0; animation: twinkle 2.2s ease-in-out infinite; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(.2) rotate(0deg); }
+  45% { opacity: 1; transform: scale(1) rotate(45deg); }
+  60% { opacity: .9; transform: scale(.9) rotate(60deg); }
+}
+.star3d .shine { opacity: 0; animation: starshine 3s ease-in-out infinite; mix-blend-mode: screen; }
+@keyframes starshine { 0%, 70%, 100% { opacity: 0; } 82% { opacity: .45; } }
+.star3d.on { filter: drop-shadow(0 0 6px rgba(255,200,60,.65)); }
+
+.win-stars { display: flex; justify-content: center; align-items: flex-end; gap: 4px; margin-bottom: 2px; }
+.win-stars .star3d { width: 64px; height: 64px; transform: scale(0); animation: starpop .5s cubic-bezier(.3,1.8,.5,1) forwards; }
+.win-stars .star3d:nth-child(2) { width: 82px; height: 82px; margin-bottom: 10px; }
+@keyframes starpop { 0% { transform: scale(0) rotate(-40deg); } 100% { transform: scale(1) rotate(0); } }
+
+.lvl-stars { display: flex; justify-content: center; gap: 0; margin-top: 2px; height: 16px; }
+.lvl-stars .star3d { width: 16px; height: 16px; }
+.lvl-stars .star3d.on { filter: drop-shadow(0 0 2px rgba(255,200,60,.7)); }
+/* light twinkle for 3-star levels (cheap enough for hundreds of buttons) */
+.lvl-stars.perfect .star3d { animation: minitwinkle 2.4s ease-in-out infinite; }
+.lvl-stars.perfect .star3d:nth-child(2) { animation-delay: .4s; }
+.lvl-stars.perfect .star3d:nth-child(3) { animation-delay: .8s; }
+@keyframes minitwinkle { 0%, 100% { filter: drop-shadow(0 0 1px rgba(255,200,60,.5)) brightness(1); } 50% { filter: drop-shadow(0 0 5px rgba(255,230,120,1)) brightness(1.25); } }
+.lvl-stars.done-check { font-size: 13px; color: #2b8a3e; height: 16px; }
+
 .lb-status { font-size: 13px; opacity: .7; margin: 4px 0 8px !important; }
 .play-btn { font-size: 26px; padding: 14px; display: flex; flex-direction: column; align-items: center; line-height: 1.15; }
 .play-btn small { font-size: 14px; font-weight: 700; opacity: .85; }
@@ -449,7 +476,9 @@ h1 {
   padding: 4px;
 }
 .level-grid button {
-  aspect-ratio: 1;
+  aspect-ratio: .82;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 4px 2px;
   border: none;
   border-radius: 14px;
   font: inherit; font-weight: 900; font-size: 16px;
