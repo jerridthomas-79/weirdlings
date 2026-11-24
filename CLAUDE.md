@@ -42,7 +42,7 @@ no two may touch, even diagonally. Every board has exactly one solution.
 - Home screen: `pickHero()` shows a random creature from the whole library each visit
   (never the same twice in a row). The little 3×3 home board uses its own random cast.
 - Board markers (`assets/creatures/cNN.webp`, 320×320) are **sticker icons**, not the full art:
-  head close-up, rounded cut edge, thick #2B2340 outline with a thin cream rim (matches the
+  head close-up, cartoon filter (flat colors + dark ink lines), rounded cut edge, thick #2B2340 outline with a thin cream rim (matches the
   owner's original toad marker). The full art is only used on the home screen (`heroes/`).
 - **To add a creature:** trim the transparent PNG, make `assets/heroes/cNN.webp` (longest side
   840), make the marker with `python3 tools/make-marker.py art.png assets/creatures/cNN.webp x0 y0 x1 y1`
