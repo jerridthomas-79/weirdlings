@@ -33,7 +33,7 @@ html, body {
 body {
   position: fixed; inset: 0;
   /* cave background, shown behind every page */
-  background: var(--bg2) url("assets/bg.jpg?v=27") center / cover no-repeat;
+  background: var(--bg2) url("assets/bg.jpg?v=28") center / cover no-repeat;
 } /* stop the page bouncing/scrolling */
 
 #app {
@@ -358,7 +358,9 @@ h1 {
 .play-btn small { font-size: 14px; font-weight: 700; opacity: .85; }
 .home-stats { text-align: center; margin: 4px 0 0; font-size: 14px; font-weight: 700; color: rgba(255,248,238,.85); text-shadow: 0 1px 4px rgba(0,0,0,.9); }
 .icon-btn.spacer { visibility: hidden; }
-.icon-btn.off { opacity: .45; }
+.icon-btn.off { opacity: 1; }
+.icon-btn .ui-icon { width: 30px; height: 30px; }
+.home-top .icon-btn { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; padding: 0; }
 .card .big-btn + .big-btn { margin-top: 12px; }
 
 /* best time / all-time record bar */

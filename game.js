@@ -743,9 +743,59 @@
   });
 
   // ---------- game menu ----------
+
+  // ---------- cartoon UI icons (same style as Levels / Leaderboard / How to play) ----------
+  const INKC = "#2B2340";
+  const UI_ICONS = {
+    home: () => `<svg class="ui-icon" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M10 31 L32 11 L54 31 L54 56 L10 56Z" fill="${INKC}" opacity=".25" transform="translate(1 3)"/>
+      <rect x="40" y="12" width="8" height="14" rx="2" fill="#B07350" stroke="${INKC}" stroke-width="3"/>
+      <path d="M13 30 L13 54 Q13 56 15 56 L49 56 Q51 56 51 54 L51 30 L32 14Z" fill="#FFE6D1" stroke="${INKC}" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M6 32 L32 9 L58 32" fill="none" stroke="${INKC}" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M6 32 L32 9 L58 32" fill="none" stroke="#E8635F" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M26 56 L26 42 Q26 37 32 37 Q38 37 38 42 L38 56Z" fill="#9B7EDB" stroke="${INKC}" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="35" cy="47" r="1.6" fill="#FFE873"/>
+      <rect x="16" y="34" width="7" height="7" rx="1.5" fill="#6CBAE8" stroke="${INKC}" stroke-width="2.2"/>
+      <rect x="41" y="34" width="7" height="7" rx="1.5" fill="#6CBAE8" stroke="${INKC}" stroke-width="2.2"/>
+    </svg>`,
+    sound: (on) => `<svg class="ui-icon" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M8 24 L20 24 L34 11 L34 53 L20 40 L8 40Z" fill="${INKC}" opacity=".25" transform="translate(1 3)"/>
+      <path d="M8 24 Q6 24 6 26 L6 38 Q6 40 8 40 L20 40 L33 52 Q35 53 35 51 L35 13 Q35 11 33 12 L20 24Z" fill="${on ? "#FDAA6B" : "#C9BBA5"}" stroke="${INKC}" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M10 28 L18 28" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+      ${on
+        ? `<path d="M42 24 Q47 32 42 40" fill="none" stroke="${INKC}" stroke-width="7" stroke-linecap="round"/>
+           <path d="M42 24 Q47 32 42 40" fill="none" stroke="#4AB8B4" stroke-width="3" stroke-linecap="round"/>
+           <path d="M49 16 Q59 32 49 48" fill="none" stroke="${INKC}" stroke-width="7" stroke-linecap="round"/>
+           <path d="M49 16 Q59 32 49 48" fill="none" stroke="#4AB8B4" stroke-width="3" stroke-linecap="round"/>`
+        : `<path d="M43 24 L57 40 M57 24 L43 40" stroke="${INKC}" stroke-width="9" stroke-linecap="round"/>
+           <path d="M43 24 L57 40 M57 24 L43 40" stroke="#E8635F" stroke-width="4.5" stroke-linecap="round"/>`}
+    </svg>`,
+    vibration: (on) => `<svg class="ui-icon" viewBox="0 0 64 64" aria-hidden="true">
+      <rect x="20" y="8" width="24" height="46" rx="6" fill="${INKC}" opacity=".25" transform="translate(1 3)"/>
+      ${on
+        ? `<path d="M13 20 L8 25 L13 30 L8 35 L13 40 M51 20 L56 25 L51 30 L56 35 L51 40" fill="none" stroke="${INKC}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+           <path d="M13 20 L8 25 L13 30 L8 35 L13 40 M51 20 L56 25 L51 30 L56 35 L51 40" fill="none" stroke="#FFC21F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`
+        : ""}
+      <rect x="19" y="6" width="26" height="50" rx="7" fill="${on ? "#9B7EDB" : "#C9BBA5"}" stroke="${INKC}" stroke-width="3.5"/>
+      <rect x="24" y="12" width="16" height="32" rx="3" fill="${on ? "#DCEFFA" : "#EFE7DA"}" stroke="${INKC}" stroke-width="2.2"/>
+      <circle cx="32" cy="50" r="2.4" fill="#fff" stroke="${INKC}" stroke-width="1.6"/>
+      <path d="M27 16 L27 26" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>
+      ${on ? "" : `<path d="M10 54 L54 10" stroke="${INKC}" stroke-width="9" stroke-linecap="round"/>
+           <path d="M10 54 L54 10" stroke="#E8635F" stroke-width="4.5" stroke-linecap="round"/>`}
+    </svg>`,
+  };
+  function renderToggleIcons() {
+    $("btn-sound").innerHTML = UI_ICONS.sound(save.sound);
+    $("btn-haptics").innerHTML = UI_ICONS.vibration(save.haptics);
+    $("menu-sound").querySelector("span").innerHTML = UI_ICONS.sound(save.sound);
+    $("menu-haptics").querySelector("span").innerHTML = UI_ICONS.vibration(save.haptics);
+  }
+  $("menu-home").querySelector("span").innerHTML = UI_ICONS.home();
+
   function openMenu() {
     $("menu-sound").querySelector("b").textContent = save.sound ? "On" : "Off";
     $("menu-haptics").querySelector("b").textContent = save.haptics ? "On" : "Off";
+    renderToggleIcons();
     openModal("modal-menu");
   }
   $("btn-menu").addEventListener("click", openMenu);
@@ -824,13 +874,13 @@
   $("btn-home").addEventListener("click", showHome);
   document.querySelectorAll("[data-home]").forEach((b) => b.addEventListener("click", showHome));
   const hapticsBtn = $("btn-haptics");
-  function renderHaptics() { hapticsBtn.classList.toggle("off", !save.haptics); }
+  function renderHaptics() { hapticsBtn.classList.toggle("off", !save.haptics); renderToggleIcons(); }
   hapticsBtn.addEventListener("click", () => { save.haptics = !save.haptics; writeSave(); renderHaptics(); haptic.light(); });
   renderHaptics();
   $("btn-next").addEventListener("click", () => { closeModal("modal-win"); startLevel(Math.min(MAX_LEVEL, level + 1)); });
   $("btn-retry").addEventListener("click", () => { closeModal("modal-lose"); startLevel(level); });
   const soundBtn = $("btn-sound");
-  function renderSound() { soundBtn.textContent = save.sound ? "🔊" : "🔇"; soundBtn.classList.toggle("off", !save.sound); }
+  function renderSound() { soundBtn.classList.toggle("off", !save.sound); renderToggleIcons(); }
   soundBtn.addEventListener("click", () => { save.sound = !save.sound; writeSave(); renderSound(); });
   renderSound();
 
@@ -838,7 +888,7 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=27")
+  fetch("boards.json?v=28")
     .then((r) => r.json())
     .then((data) => {
       bank = data;
