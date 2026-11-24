@@ -7,15 +7,15 @@ A cozy logic puzzle for your phone's browser, inspired by Meowdoku.
 - Tap a square to mark ✕ (tap again after a second to clear it). Double-tap within 1 second to place a weirdling. Drag across squares to mark several at once.
 - A wrong placement costs a ❤️. Lose all 3 and the level restarts.
 - 2 hints per level, plus restart.
-- 200 levels that grow from 5×5 up to 13×13, saved in `boards.json`. Every puzzle has exactly one solution.
-- After level 200 the game reuses a board you've already solved, rotated or flipped and recolored so it looks new. It never generates new boards.
+- 173 levels that grow from 5×5 up to 12×12, saved in `boards.json`. Every puzzle has exactly one solution.
+- After level 173 the game reuses a board you've already solved, rotated or flipped and recolored so it looks new. It never generates new boards.
 - Progress saves on your device. Use "Add to Home Screen" to play it like an app.
 
 Plain HTML/CSS/JS with no build step, hosted on GitHub Pages.
 
 | File | What it does |
 |---|---|
-| `boards.json` | The 200 saved puzzles, in level order |
+| `boards.json` | The 173 saved puzzles, in level order |
 | `puzzle.js` | Puzzle generator and solver |
 | `tools/build-boards.js` | Rebuilds `boards.json` (run with Node) |
 | `creatures.js` | The weirdling artwork (SVG) |

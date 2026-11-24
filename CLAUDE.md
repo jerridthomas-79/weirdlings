@@ -16,9 +16,9 @@ no two may touch, even diagonally. Every board has exactly one solution.
 | `style.css` | All styling and animations |
 | `game.js` | Game logic, input, haptics, sound, home screen, menu, stars, records, win effects, UI icons (`UI_ICONS`) |
 | `puzzle.js` | Puzzle generator and solver (only used by `tools/build-boards.js` and tests) |
-| `boards.json` | The bank of 200 boards in level order: 5×5 (12), 6×6 (16), 7×7 (20), 8×8 (22), 9×9 (24), 10×10 (26), 11×11 (26), 12×12 (27), 13×13 (27) |
+| `boards.json` | The bank of 173 boards in level order: 5×5 (12), 6×6 (16), 7×7 (20), 8×8 (22), 9×9 (24), 10×10 (26), 11×11 (26), 12×12 (27). 13×13 was removed (owner: "too much"); don't add it back |
 | `tools/build-boards.js` | Rebuilds `boards.json` (slow for 12×12/13×13; run sizes in parallel) |
-| `creatures.js` | `REGION_COLORS` (13 colors), `CREATURES` (owner's art library), `HERO_META` (full-art size + eye spots/eyelid colors for the crowd), `makeCast()`/`setCast()`/`getCast()`, `creatureSVG()`; old SVG `DESIGNS` kept only as a fallback |
+| `creatures.js` | `REGION_COLORS` (12 colors), `SYMBOLS` + `paintTile()` (tile color + its symbol), `CREATURES` (owner's art library), `HERO_META` (full-art size + eye spots/eyelid colors for the crowd), `makeCast()`/`setCast()`/`getCast()`, `creatureSVG()`; old SVG `DESIGNS` kept only as a fallback |
 | `bgfx.js` | Twinkling/glowing crystals over the background on every page |
 | `leaderboard.js` | Supabase REST calls (leaderboard + board records), no library |
 | `config.js` | Supabase URL + publishable key (public by design) |
@@ -26,11 +26,16 @@ no two may touch, even diagonally. Every board has exactly one solution.
 | `assets/` | Owner's art: `logo.webp/png`, `bg.jpg` (1290×2796 cave), `creatures/cNN.webp` (320×320 board markers), `heroes/cNN.webp` (up to 840px, home screen) |
 
 ## Levels and boards
-- Levels 1–200 play `boards.json` in order. After 200, each level reuses a random board,
+- Levels 1–173 play `boards.json` in order. After 173, each level reuses a random board,
   rotated/flipped (7 transforms) and recolored. Level cap is **99,999**.
-- Best times and all-time records belong to the **board** (1–200), not the level number,
+- Best times and all-time records belong to the **board** (1–173), not the level number,
   so remixes share them (`boardId() = puzzle.bankIndex + 1`).
-- Colors per level are a seeded shuffle of the 13 colors (`colorOf`). The 13 colors were re-tuned
+- 12 colors (lime was removed by the owner). Colors per level come from `contrastColors()`: a seeded
+  shuffle, then a seeded hill-climb (swaps + swapping in unused colors) that maximizes the weakest
+  OKLab contrast between edge-touching patches (corner touches count half). Each color also has its
+  own tiny black-and-white symbol (heart, triangle, star, plus, drop, circle, diamond, square, moon,
+  hexagon, bolt, dome) painted top-middle of every tile as a background image (clear of the ✕ arms).
+  The colors were re-tuned
   in OKLCH (owner: "colors too similar") so close pairs (orange/mustard, blue/slate, green/lime,
   pink/magenta, teal/blue) are more saturated. A 2nd pass (owner: greens, earth tones and pinks still
   too alike) spread lightness too: deep emerald green vs bright chartreuse lime, dark brown vs pale

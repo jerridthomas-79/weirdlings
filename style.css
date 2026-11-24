@@ -726,3 +726,10 @@ h1 {
 .rule-cards .rule-pic { width: 58px; height: 58px; flex: none; overflow: visible; }
 .rule-cards b { display: block; font-size: 17px; font-weight: 900; }
 .rule-cards small { display: block; font-size: 13px; opacity: .75; font-weight: 700; margin-top: 2px; }
+
+/* tiny black-and-white color symbol on every tile (top middle, clear of the ✕ arms) */
+.cell, .home-grid .tile {
+  background-repeat: no-repeat;
+  background-position: 50% 7%;
+  background-size: max(9px, 26%) auto;
+}

@@ -1,5 +1,6 @@
 // Original Weirdling creature art, drawn as inline SVG.
 (function (root) {
+  // Lime was removed (owner, Nov 2026): 12 colors for boards up to 12x12.
   // Colors were re-tuned twice (Nov 2026) in OKLCH; 2nd pass split greens (deep emerald vs
   // bright chartreuse lime), earth tones (dark brown, pale sand, amber mustard) and pinks.
   // Originally re-tuned so neighbours like orange/mustard,
@@ -16,12 +17,36 @@
     { tile: "#8C5331", light: "#FFE5D7", body: "#6E2500" }, // brown
     { tile: "#A5B7DF", light: "#E0EBFF", body: "#748EC7" }, // slate
     { tile: "#E64340", light: "#FFE3DF", body: "#BE0004" }, // red
-    { tile: "#C5EE37", light: "#E7EFD6", body: "#9BC400" }, // lime
     { tile: "#BF38AA", light: "#FBE3F5", body: "#960084" }, // magenta
     { tile: "#E2D3AF", light: "#F5EAD1", body: "#C0A86F" }, // sand
   ];
 
   const INK = "#2B2340";
+
+  // A tiny black-and-white symbol for each color (same index as REGION_COLORS), drawn in the
+  // corner of every tile so patches can be told apart without relying on color alone.
+  const SYMBOLS = [
+    "M12 20.5C5 15.5 3 11.5 3 8.5 3 5.5 5.3 3.5 8 3.5c1.8 0 3.2 1.1 4 2.5.8-1.4 2.2-2.5 4-2.5 2.7 0 5 2 5 5 0 3-2 7-9 12Z", // pink: heart
+    "M12 3.5 21 19.5H3Z",                                     // orange: triangle
+    "M12 2.5l2.6 6.3 6.8.5-5.2 4.3 1.7 6.7L12 16.6l-5.9 3.7 1.7-6.7-5.2-4.3 6.8-.5Z", // mustard: star
+    "M9 3h6v6h6v6h-6v6H9v-6H3V9h6Z",                          // green: plus
+    "M12 2.5S19 10.5 19 15a7 7 0 0 1-14 0c0-4.5 7-12.5 7-12.5Z", // teal: drop
+    "M12 3.5a8.5 8.5 0 1 1-.01 0Z",                           // blue: circle
+    "M12 2.5 21 12l-9 9.5L3 12Z",                             // purple: diamond
+    "M4.5 4.5h15v15h-15Z",                                    // brown: square
+    "M15 3a9 9 0 1 0 6 12A7 7 0 1 1 15 3Z",                   // slate: moon
+    "M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5Z",           // red: hexagon
+    "M13.5 2 4.5 13.5H11L9.5 22l10-12H13Z",                   // magenta: lightning bolt
+    "M3 18a9 9 0 0 1 18 0Z",                                  // sand: dome
+  ];
+  const symbolURL = SYMBOLS.map((d) =>
+    `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='${d}' fill='#fff' stroke='#141018' stroke-width='2.4' stroke-linejoin='round'/></svg>`)}")`);
+  // Paint a tile: its color plus its color's symbol.
+  function paintTile(el, colorIndex) {
+    el.style.backgroundColor = REGION_COLORS[colorIndex].tile;
+    el.style.backgroundImage = symbolURL[colorIndex % symbolURL.length];
+  }
+
 
   function eye(x, y, r) {
     return `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" stroke="${INK}" stroke-width="3"/>` +
@@ -98,7 +123,7 @@
   // (matched to the nearest tile color); later entries are backups used only
   // when a color has no creature of its own (pink, brown) or is already taken.
   // Color index: 0 pink 1 orange 2 mustard 3 green 4 teal 5 blue 6 purple
-  // 7 brown 8 slate 9 red 10 lime 11 magenta 12 sand
+  // 7 brown 8 slate 9 red 10 magenta 11 sand
   // Full-art sizes and eye spots (percent of width/height, radius in % of width,
   // eyelid color) so the little creatures under the board can blink and smile.
   const HERO_META = {
@@ -125,13 +150,13 @@
   const HERO_META_get = (id) => HERO_META[id] || { w: 1, h: 1, eyes: [] };
   const ART_V = 6;
   const CREATURES = [
-    { id: "c01", colors: [8, 12] },      // shaggy one-eyed sad fluff
-    { id: "c02", colors: [11, 0] },      // two-headed bird
+    { id: "c01", colors: [8, 11] },      // shaggy one-eyed sad fluff
+    { id: "c02", colors: [10, 0] },      // two-headed bird
     { id: "c03", colors: [6, 4] },       // big-mouth fish lizard
     { id: "c04", colors: [9, 7] },       // mushroom toad
     { id: "c05", colors: [4] },          // goggle chameleon
-    { id: "c06", colors: [12, 6] },      // lava-lamp cyclops
-    { id: "c07", colors: [10, 3, 0] },   // fairy frog
+    { id: "c06", colors: [11, 6] },      // lava-lamp cyclops
+    { id: "c07", colors: [3, 0] },   // fairy frog
     { id: "c09", colors: [3, 7, 0] },    // butterfly mushroom turtle
     { id: "c10", colors: [1] },          // coral owl octopus
     { id: "c11", colors: [1, 6, 0] },    // tentacle-tail lizard
@@ -219,7 +244,7 @@
       (d.front || "") + cheeks + eyes + mouth + `</svg>`;
   }
 
-  const api = { REGION_COLORS, DESIGNS, CREATURES, creatureSVG, makeCast, setCast, getCast: () => currentCast, INK };
+  const api = { REGION_COLORS, SYMBOLS, paintTile, DESIGNS, CREATURES, creatureSVG, makeCast, setCast, getCast: () => currentCast, INK };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Weirdlings = api;
 })(typeof window !== "undefined" ? window : globalThis);

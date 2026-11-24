@@ -1,7 +1,7 @@
 // Weirdlings game UI
 (function () {
   const { mulberry32 } = window.WeirdPuzzle;
-  const { REGION_COLORS, creatureSVG } = window.Weirdlings;
+  const { REGION_COLORS, creatureSVG, paintTile } = window.Weirdlings;
 
   const MAX_HEARTS = 3;
   const MAX_LEVEL = 99999; // level counter tops out here
@@ -84,7 +84,7 @@
   };
 
   // ---------- level bank ----------
-  // boards.json holds 200 unique puzzles in order (5x5 up to 13x13).
+  // boards.json holds 173 unique puzzles in order (5x5 up to 12x12; 13x13 was removed).
   // Levels 1-200 play them in order. After that, a previously solved board
   // is picked at random and rotated/flipped so it looks new.
   // Every level also gets its own random colors.
@@ -145,9 +145,73 @@
       const [r2, c2] = transformRC(sym, r, B36.indexOf(b.s[r]), n);
       solution[r2] = c2;
     }
-    // fresh colors (and creatures) for this level
-    const colorOf = shuffled(REGION_COLORS.length, mulberry32(colorSeed)).slice(0, n);
+    // fresh colors (and creatures) for this level, arranged so touching patches contrast
+    const colorOf = contrastColors(regions, n, mulberry32(colorSeed));
     return { n, regions, solution, colorOf, bankIndex: idx, sym };
+  }
+
+  // ---------- colors: maximize contrast between neighbouring patches ----------
+  // OKLab distance between every pair of palette colors.
+  const COLOR_DIST = (() => {
+    const lab = REGION_COLORS.map(({ tile }) => {
+      const lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      const [r, g, b] = [1, 3, 5].map((k) => lin(parseInt(tile.slice(k, k + 2), 16)));
+      const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+      const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+      const s2 = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+      return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s2,
+        1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s2,
+        0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s2];
+    });
+    return lab.map((a) => lab.map((b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])));
+  })();
+  // Pick a color for each patch: start from a seeded shuffle, then swap colors around
+  // (and swap in unused ones) to make the closest pair of touching patches as different
+  // as possible. Patches touching along an edge count fully, corner-only touches count half.
+  function contrastColors(regions, n, rng) {
+    const all = shuffled(REGION_COLORS.length, rng);
+    const asg = all.slice(0, n), spare = all.slice(n);
+    const w = new Map();
+    const link = (a, b, wt) => {
+      if (a === b) return;
+      const k = a < b ? a * 64 + b : b * 64 + a;
+      w.set(k, Math.max(w.get(k) || 0, wt));
+    };
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+      const a = regions[r * n + c];
+      if (c + 1 < n) link(a, regions[r * n + c + 1], 1);
+      if (r + 1 < n) link(a, regions[(r + 1) * n + c], 1);
+      if (r + 1 < n && c + 1 < n) link(a, regions[(r + 1) * n + c + 1], 0.5);
+      if (r + 1 < n && c > 0) link(a, regions[(r + 1) * n + c - 1], 0.5);
+    }
+    const pairs = [...w].map(([k, wt]) => [Math.floor(k / 64), k % 64, wt]);
+    // score: weakest edge-neighbour contrast first, then the overall sum (small gaps hurt most)
+    const score = () => {
+      let worst = Infinity, sum = 0;
+      for (const [a, b, wt] of pairs) {
+        const d = COLOR_DIST[asg[a]][asg[b]];
+        if (wt === 1 && d < worst) worst = d;
+        sum += wt * Math.min(d, 0.3);
+      }
+      return worst * 100 + sum;
+    };
+    let best = score();
+    for (let it = 0; it < 900; it++) {
+      const a = Math.floor(rng() * n);
+      if (spare.length && rng() < 0.35) {
+        const s = Math.floor(rng() * spare.length);
+        [asg[a], spare[s]] = [spare[s], asg[a]];
+        const sc = score();
+        if (sc >= best) best = sc; else [asg[a], spare[s]] = [spare[s], asg[a]];
+      } else {
+        const b = Math.floor(rng() * n);
+        if (a === b) continue;
+        [asg[a], asg[b]] = [asg[b], asg[a]];
+        const sc = score();
+        if (sc >= best) best = sc; else [asg[a], asg[b]] = [asg[b], asg[a]];
+      }
+    }
+    return asg;
   }
 
   function sizeForLevel(lv) {
@@ -244,7 +308,7 @@
       el.className = "cell";
       el.dataset.i = i;
       el.setAttribute("role", "gridcell");
-      el.style.background = REGION_COLORS[regionAt(i)].tile;
+      paintTile(el, regionAt(i));
       boardEl.appendChild(el);
       cellEls.push(el);
     }
@@ -254,7 +318,7 @@
     const el = cellEls[i];
     const s = cells[i];
     const col = REGION_COLORS[regionAt(i)];
-    el.style.background = col.tile; // keep the patch color, even under a weirdling
+    paintTile(el, regionAt(i)); // keep the patch color (and symbol), even under a weirdling
     if (s === 0) el.innerHTML = "";
     else if (s === 1) el.innerHTML = X_SVG;
     else el.innerHTML = creatureSVG(regionAt(i));
@@ -1079,7 +1143,7 @@
       const c = picks[g];
       const t = document.createElement("div");
       t.className = "tile";
-      t.style.background = REGION_COLORS[c].tile;
+      paintTile(t, c);
       if (show[k] === "w") t.innerHTML = creatureSVG(c, undefined, homeCast);
       else if (show[k] === "x") t.innerHTML = X_SVG;
       const w = t.querySelector(".weirdling");
@@ -1190,7 +1254,7 @@
   };
 
   // ---------- go ----------
-  fetch("boards.json?v=33")
+  fetch("boards.json?v=34")
     .then((r) => r.json())
     .then((data) => {
       bank = data;
