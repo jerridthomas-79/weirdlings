@@ -61,9 +61,9 @@
     // the crystal lights up a little
     const glow = document.createElement("div");
     glow.className = "fx-glow";
-    const gs = Math.max(bw, bh) * 1.25;
+    const gs = Math.max(bw, bh) * 1.45;
     glow.style.cssText = `left:${cx - gs / 2}px;top:${cy - gs / 2}px;width:${gs}px;height:${gs}px;` +
-      `background:radial-gradient(circle, rgba(${rgb},.55) 0%, rgba(${rgb},.22) 38%, rgba(${rgb},0) 68%);` +
+      `background:radial-gradient(circle, rgba(255,255,255,.35) 0%, rgba(${rgb},.85) 14%, rgba(${rgb},.42) 38%, rgba(${rgb},0) 70%);` +
       `animation-duration:${1.6 + Math.random() * 1.2}s`;
     layer.appendChild(glow);
 
