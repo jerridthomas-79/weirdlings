@@ -35,6 +35,9 @@ no two may touch, even diagonally. Every board has exactly one solution.
   OKLab contrast between edge-touching patches (corner touches count half). Each color also has its
   own tiny black-and-white symbol (heart, triangle, star, plus, drop, circle, diamond, square, moon,
   hexagon, bolt, dome) painted top-middle of every tile as a background image (clear of the ✕ arms).
+  Symbols are a setting (`save.symbols`, **off by default**; toggle in the game menu "Color symbols"
+  and the tiles icon in the home screen's top bar; `body.symbols-on`). With symbols off, every tile
+  gets a dark inner outline (inset box-shadow, ~5% of a tile) to separate it from its neighbours.
   The colors were re-tuned
   in OKLCH (owner: "colors too similar") so close pairs (orange/mustard, blue/slate, green/lime,
   pink/magenta, teal/blue) are more saturated. A 2nd pass (owner: greens, earth tones and pinks still
@@ -106,7 +109,7 @@ no two may touch, even diagonally. Every board has exactly one solution.
 - Stars: 3 = no mistakes, 2 = one, 1 = two. 3D gold twinkling stars on the win screen;
   best stars per level shown in the level chooser (saved per device).
 - Icons: custom cartoon SVGs (thick #2B2340 outline, bright fills): Levels, Leaderboard,
-  How to play, Sound/Vibration (on/off variants), Home (mushroom house), and the game-screen tools:
+  How to play, Sound/Vibration/Color symbols (on/off variants), Home (mushroom house), and the game-screen tools:
   Hint (glowing bulb, hint count in a pink badge), Restart (teal circular arrow), Rules (open book).
   The tool buttons use the same chunky ghost style as the home buttons.
 

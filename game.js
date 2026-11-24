@@ -1102,8 +1102,32 @@
       ${on ? "" : `<path d="M10 54 L54 10" stroke="${INKC}" stroke-width="9" stroke-linecap="round"/>
            <path d="M10 54 L54 10" stroke="#E8635F" stroke-width="4.5" stroke-linecap="round"/>`}
     </svg>`,
+    // a little tile with a heart and a star on it (the color symbols setting)
+    symbols: (on) => `<svg class="ui-icon" viewBox="0 0 64 64" aria-hidden="true">
+      <rect x="9" y="10" width="46" height="46" rx="11" fill="${INKC}" opacity=".25" transform="translate(1 3)"/>
+      <rect x="8" y="8" width="23" height="23" rx="6" fill="#FFA2CD" stroke="${INKC}" stroke-width="3.5"/>
+      <rect x="33" y="8" width="23" height="23" rx="6" fill="#F9BC1E" stroke="${INKC}" stroke-width="3.5"/>
+      <rect x="8" y="33" width="23" height="23" rx="6" fill="#3E96EA" stroke="${INKC}" stroke-width="3.5"/>
+      <rect x="33" y="33" width="23" height="23" rx="6" fill="#0FA44D" stroke="${INKC}" stroke-width="3.5"/>
+      <path d="M19.5 26C14.5 22.5 13 20 13 18c0-2 1.6-3.4 3.4-3.4 1.3 0 2.4.8 3.1 1.8.7-1 1.8-1.8 3.1-1.8 1.8 0 3.4 1.4 3.4 3.4 0 2-1.5 4.5-6.5 8Z" fill="#fff" stroke="${INKC}" stroke-width="2"/>
+      <path d="M44.5 12.5l1.8 4.3 4.6.4-3.5 3 1.1 4.5-4-2.5-4 2.5 1.1-4.5-3.5-3 4.6-.4Z" fill="#fff" stroke="${INKC}" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="19.5" cy="44.5" r="5.5" fill="#fff" stroke="${INKC}" stroke-width="2"/>
+      <path d="M41.5 41.5h6v-0 M44.5 38.5v12 M38.5 44.5h12" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+      <path d="M44.5 38.5v12 M38.5 44.5h12" stroke="${INKC}" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>
+      ${on ? "" : `<path d="M10 54 L54 10" stroke="${INKC}" stroke-width="9" stroke-linecap="round"/>
+           <path d="M10 54 L54 10" stroke="#E8635F" stroke-width="4.5" stroke-linecap="round"/>`}
+    </svg>`,
   };
+  // Color symbols on tiles: off by default. Off = tiles get a dark inner outline instead.
+  function renderSymbols() {
+    document.body.classList.toggle("symbols-on", !!save.symbols);
+    $("btn-symbols").classList.toggle("off", !save.symbols);
+  }
+  function toggleSymbols() { save.symbols = !save.symbols; writeSave(); renderSymbols(); renderToggleIcons(); haptic.light(); }
   function renderToggleIcons() {
+    $("btn-symbols").innerHTML = UI_ICONS.symbols(!!save.symbols);
+    $("menu-symbols").querySelector("span").innerHTML = UI_ICONS.symbols(!!save.symbols);
+    $("menu-symbols").querySelector("b").textContent = save.symbols ? "On" : "Off";
     $("btn-sound").innerHTML = UI_ICONS.sound(save.sound);
     $("btn-haptics").innerHTML = UI_ICONS.vibration(save.haptics);
     $("menu-sound").querySelector("span").innerHTML = UI_ICONS.sound(save.sound);
@@ -1118,6 +1142,9 @@
     openModal("modal-menu");
   }
   $("btn-menu").addEventListener("click", openMenu);
+  $("menu-symbols").addEventListener("click", toggleSymbols);
+  $("btn-symbols").addEventListener("click", toggleSymbols);
+  renderSymbols();
   $("menu-leaders").addEventListener("click", () => { closeModal("modal-menu"); openLeaderboard(); });
   $("menu-levels").addEventListener("click", () => { closeModal("modal-menu"); showLevels(); });
   $("menu-help").addEventListener("click", () => { closeModal("modal-menu"); showHelp(); });
