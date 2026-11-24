@@ -90,7 +90,82 @@
     },
   ];
 
-  function creatureSVG(index, mood) {
+  // The owner's creature art. colors[0] = the color the creature mainly is
+  // (matched to the nearest tile color); later entries are backups used only
+  // when a color has no creature of its own (pink, brown) or is already taken.
+  // Color index: 0 pink 1 orange 2 mustard 3 green 4 teal 5 blue 6 purple
+  // 7 brown 8 slate 9 red 10 lime 11 magenta 12 sand
+  const ART_V = 1;
+  const CREATURES = [
+    { id: "c01", colors: [8, 12] },      // shaggy one-eyed sad fluff
+    { id: "c02", colors: [11, 0] },      // two-headed bird
+    { id: "c03", colors: [6, 4] },       // big-mouth fish lizard
+    { id: "c04", colors: [9, 7] },       // mushroom toad
+    { id: "c05", colors: [4] },          // goggle chameleon
+    { id: "c06", colors: [12, 6] },      // lava-lamp cyclops
+    { id: "c07", colors: [10, 3, 0] },   // fairy frog
+    { id: "c09", colors: [3, 7, 0] },    // butterfly mushroom turtle
+    { id: "c10", colors: [1] },          // coral owl octopus
+    { id: "c11", colors: [1, 6, 0] },    // tentacle-tail lizard
+    { id: "c12", colors: [4] },          // teal antler griffin
+    { id: "c13", colors: [9] },          // red antler griffin
+    { id: "c14", colors: [5] },          // ice whale
+    { id: "c17", colors: [2] },          // honeycomb bee scorpion
+    { id: "c18", colors: [3, 7] },       // moss snail sloth
+    { id: "c19", colors: [9, 7] },       // lava egg octopus
+    { id: "c20", colors: [5] },          // shell heron
+    { id: "c23", colors: [5, 6] },       // cosmic whale
+    { id: "c24", colors: [6, 5] },       // night-sky whale
+  ].map((c) => ({ ...c,
+    img: `assets/creatures/${c.id}.webp?v=${ART_V}`,
+    hero: `assets/heroes/${c.id}.webp?v=${ART_V}` }));
+
+  function rng32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Pick one creature per color (no repeats among `used` colors), seeded.
+  function makeCast(seed, used) {
+    const rand = rng32(seed);
+    const colors = used && used.length ? [...new Set(used)] : REGION_COLORS.map((_, i) => i);
+    for (let i = 0; i < REGION_COLORS.length; i++) if (!colors.includes(i)) colors.push(i);
+    const cand = (ci) => {
+      const own = CREATURES.filter((c) => c.colors[0] === ci);
+      return own.length ? own : CREATURES.filter((c) => c.colors.includes(ci));
+    };
+    const usedCount = used && used.length ? new Set(used).size : colors.length;
+    const level = colors.slice(0, usedCount).sort((a, b) => cand(a).length - cand(b).length);
+    const cast = [], taken = new Set();
+    const order = (list) => list.map((c) => [rand(), c]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+    const opts = level.map((ci) => order(cand(ci)));
+    // backtracking so every color on the board gets a different creature
+    (function fill(k) {
+      if (k === level.length) return true;
+      for (const c of opts[k]) {
+        if (taken.has(c.id)) continue;
+        taken.add(c.id); cast[level[k]] = c;
+        if (fill(k + 1)) return true;
+        taken.delete(c.id);
+      }
+      return false;
+    })(0) || level.forEach((ci, k) => { cast[ci] = opts[k][0]; });
+    colors.slice(usedCount).forEach((ci) => { cast[ci] = order(cand(ci))[0]; });
+    return cast;
+  }
+
+  let currentCast = makeCast(1);
+  function setCast(seed, used) { currentCast = makeCast(seed, used); return currentCast; }
+
+  function creatureSVG(index, mood, cast) {
+    const art = (cast || currentCast)[index % REGION_COLORS.length];
+    if (art) {
+      return `<img class="weirdling img-weirdling${mood === "sad" ? " sad" : ""}" src="${art.img}" alt="" draggable="false">`;
+    }
     const d = DESIGNS[index % DESIGNS.length];
     if (d.img) {
       return `<img class="weirdling img-weirdling${mood === "sad" ? " sad" : ""}" src="${d.img}" alt="" draggable="false">`;
@@ -116,7 +191,7 @@
       (d.front || "") + cheeks + eyes + mouth + `</svg>`;
   }
 
-  const api = { REGION_COLORS, DESIGNS, creatureSVG, INK };
+  const api = { REGION_COLORS, DESIGNS, CREATURES, creatureSVG, makeCast, setCast, INK };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Weirdlings = api;
 })(typeof window !== "undefined" ? window : globalThis);

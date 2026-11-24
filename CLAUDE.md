@@ -18,12 +18,12 @@ no two may touch, even diagonally. Every board has exactly one solution.
 | `puzzle.js` | Puzzle generator and solver (only used by `tools/build-boards.js` and tests) |
 | `boards.json` | The bank of 200 boards in level order: 5×5 (12), 6×6 (16), 7×7 (20), 8×8 (22), 9×9 (24), 10×10 (26), 11×11 (26), 12×12 (27), 13×13 (27) |
 | `tools/build-boards.js` | Rebuilds `boards.json` (slow for 12×12/13×13; run sizes in parallel) |
-| `creatures.js` | `REGION_COLORS` (13 colors) and `DESIGNS` (13 creatures) + `creatureSVG()` |
+| `creatures.js` | `REGION_COLORS` (13 colors), `CREATURES` (owner's art library), `makeCast()`/`setCast()`, `creatureSVG()`; old SVG `DESIGNS` kept only as a fallback |
 | `bgfx.js` | Twinkling/glowing crystals over the background on every page |
 | `leaderboard.js` | Supabase REST calls (leaderboard + board records), no library |
 | `config.js` | Supabase URL + publishable key (public by design) |
 | `supabase/setup.sql` | Full database setup, kept in sync with what's applied |
-| `assets/` | Owner's art: `logo.webp/png`, `bg.jpg` (1290×2796 cave), `toad.webp` (home hero), `creature-toad.webp` |
+| `assets/` | Owner's art: `logo.webp/png`, `bg.jpg` (1290×2796 cave), `creatures/cNN.webp` (320×320 board markers), `heroes/cNN.webp` (up to 840px, home screen) |
 
 ## Levels and boards
 - Levels 1–200 play `boards.json` in order. After 200, each level reuses a random board,
@@ -32,15 +32,19 @@ no two may touch, even diagonally. Every board has exactly one solution.
   so remixes share them (`boardId() = puzzle.bankIndex + 1`).
 - Colors per level are a seeded shuffle of the 13 colors (`colorOf`).
 
-## Creatures (one per color index; creature is tied to its color)
-0 pink · 1 orange · 2 mustard · 3 green · 4 teal · 5 blue · 6 purple · 7 brown · 8 slate ·
-**9 red = mushroom toad image** (`assets/creature-toad.webp`) · 10 lime · 11 magenta · 12 sand.
-All others are hand-drawn SVGs in `creatures.js`.
-
-**To swap in the owner's art for a color:** trim the transparent PNG, center it on a square
-canvas, resize to ~320×320, save as `assets/creature-NAME.webp`, then replace that index in
-`DESIGNS` with `{ img: "assets/creature-NAME.webp?v=N" }`. `creatureSVG()` already renders image
-creatures (`<img class="weirdling img-weirdling">`) and greys/tilts them for wrong guesses.
+## Creatures (owner's art, 19 so far)
+- Every creature is the owner's image, numbered like their files (`creature_11.png` → `c11`).
+  `CREATURES` in `creatures.js` lists each with `colors`: first = the color it mainly is
+  (matched to the nearest tile color), later ones = backups.
+- Each level picks one creature per color, seeded by level (`setCast(lv*7919+17, colorOf)`),
+  so colors with several matches rotate between levels. Backtracking guarantees no creature
+  repeats on a board. Pink and brown have no creature of their own and borrow backups.
+- Home screen: `pickHero()` shows a random creature from the whole library each visit
+  (never the same twice in a row). The little 3×3 home board uses its own random cast.
+- **To add a creature:** trim the transparent PNG, make `assets/heroes/cNN.webp` (longest side
+  840) and `assets/creatures/cNN.webp` (centered on a square, 320×320), add
+  `{ id: "cNN", colors: [main, backup...] }` to `CREATURES`, and bump `ART_V` if any image changed.
+  `creatureSVG()` greys/tilts image creatures for wrong guesses.
 
 ## Controls (owner-specified; keep them)
 - Tap = toggle ✕. Second tap on the same square **within 1 second** = place a weirdling.

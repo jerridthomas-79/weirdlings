@@ -160,6 +160,7 @@
     writeSave();
     puzzle = puzzleForLevel(lv);
     n = puzzle.n;
+    window.Weirdlings.setCast(lv * 7919 + 17, puzzle.colorOf);
     cells = new Array(n * n).fill(0); // 0 empty, 1 marked, 2 weirdling
     hearts = MAX_HEARTS;
     hints = HINTS_PER_LEVEL;
@@ -821,6 +822,7 @@
   function buildHomeGrid() {
     // a little 3x3 sample board with weirdlings and X marks
     const picks = shuffled(REGION_COLORS.length, mulberry32(Date.now() % 100000)).slice(0, 3);
+    const homeCast = window.Weirdlings.makeCast(Date.now() % 100000 + 7, picks);
     const layout = [0, 0, 1, 2, 0, 1, 2, 2, 1];
     const show = { 1: "w", 3: "x", 4: "x", 6: "w", 8: "w", 0: "x", 2: "x" };
     const grid = $("home-grid");
@@ -830,7 +832,7 @@
       const t = document.createElement("div");
       t.className = "tile";
       t.style.background = REGION_COLORS[c].tile;
-      if (show[k] === "w") t.innerHTML = creatureSVG(c);
+      if (show[k] === "w") t.innerHTML = creatureSVG(c, undefined, homeCast);
       else if (show[k] === "x") t.innerHTML = X_SVG;
       const w = t.querySelector(".weirdling");
       if (w) w.style.animationDelay = (k * 0.17) + "s";
@@ -854,7 +856,23 @@
     $("app").hidden = true;
     $("home").hidden = false;
     buildHomeGrid();
+    pickHero();
     refreshHome();
+  }
+
+  // featured creature on the home screen: a random one from the whole library,
+  // never the same one twice in a row
+  let heroIdx = -1;
+  function pickHero() {
+    const all = window.Weirdlings.CREATURES;
+    let k = Math.floor(Math.random() * all.length);
+    if (all.length > 1 && k === heroIdx) k = (k + 1 + Math.floor(Math.random() * (all.length - 1))) % all.length;
+    heroIdx = k;
+    const img = $("hero-img");
+    img.classList.remove("hero-in");
+    img.src = all[k].hero;
+    void img.offsetWidth;
+    img.classList.add("hero-in");
   }
 
   function showGame(lv) {
