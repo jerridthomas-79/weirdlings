@@ -89,3 +89,35 @@ begin
 end; $$;
 revoke all on function public.submit_time(uuid, text, text, integer, integer) from public;
 grant execute on function public.submit_time(uuid, text, text, integer, integer) to anon, authenticated;
+
+-- ===== Records belong to boards (1-200), not level numbers =====
+-- Every rotated/recolored replay after level 200 shares its board's record.
+alter table public.level_records rename column level to board;
+alter table public.level_records drop constraint if exists level_records_level_check;
+alter table public.level_records add constraint level_records_board_check check (board between 1 and 200);
+alter table public.level_records rename to board_records;
+alter policy "Anyone can read level records" on public.board_records rename to "Anyone can read board records";
+grant select (board, ms, name, player_id, set_at) on public.board_records to anon, authenticated;
+drop function if exists public.submit_time(uuid, text, text, integer, integer);
+create function public.submit_time(p_id uuid, p_secret text, p_name text, p_board integer, p_ms integer)
+returns boolean language plpgsql security definer set search_path = public as $$
+declare v_name text; v_secret text; v_count integer;
+begin
+  if p_board < 1 or p_board > 200 then raise exception 'board out of range'; end if;
+  if p_ms < 1500 or p_ms > 86400000 then raise exception 'time out of range'; end if;
+  if char_length(coalesce(p_secret, '')) < 20 then raise exception 'bad secret'; end if;
+  select name, secret into v_name, v_secret from players where id = p_id;
+  if found and v_secret <> p_secret then raise exception 'not allowed'; end if;
+  if v_name is null then
+    v_name := left(btrim(regexp_replace(coalesce(p_name, ''), '\s+', ' ', 'g')), 16);
+    if v_name = '' then v_name := 'Anonymous'; end if;
+  end if;
+  insert into board_records (board, ms, name, player_id) values (p_board, p_ms, v_name, p_id)
+  on conflict (board) do update
+    set ms = excluded.ms, name = excluded.name, player_id = excluded.player_id, set_at = now()
+    where excluded.ms < board_records.ms;
+  get diagnostics v_count = row_count;
+  return v_count > 0;
+end; $$;
+revoke all on function public.submit_time(uuid, text, text, integer, integer) from public;
+grant execute on function public.submit_time(uuid, text, text, integer, integer) to anon, authenticated;

@@ -77,20 +77,20 @@
     return Number.isFinite(total) ? total + 1 : null;
   }
 
-  // ---- all-time record per level ----
-  async function getRecord(level) {
-    const res = await fetch(`${base}/rest/v1/level_records?level=eq.${level}&select=ms,name,player_id`, { headers: headers() });
+  // ---- all-time record per board (1-200; shared by every remix of that board) ----
+  async function getRecord(board) {
+    const res = await fetch(`${base}/rest/v1/board_records?board=eq.${board}&select=ms,name,player_id`, { headers: headers() });
     if (!res.ok) throw new Error("record failed " + res.status);
     const rows = await res.json();
     return rows[0] || null;
   }
   // Returns true if this time set a new all-time record.
-  async function submitTime(level, ms) {
+  async function submitTime(board, ms) {
     const p = getPlayer();
     const res = await fetch(`${base}/rest/v1/rpc/submit_time`, {
       method: "POST",
       headers: headers(),
-      body: JSON.stringify({ p_id: p.id, p_secret: p.secret, p_name: p.name || "", p_level: level, p_ms: Math.round(ms) }),
+      body: JSON.stringify({ p_id: p.id, p_secret: p.secret, p_name: p.name || "", p_board: board, p_ms: Math.round(ms) }),
     });
     if (!res.ok) throw new Error("time failed " + res.status);
     return (await res.json()) === true;

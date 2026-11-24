@@ -175,7 +175,9 @@
     renderHearts();
     updateTools();
     updateTimer();
-    $("level-label").textContent = `Level ${lv} · ${n}×${n}`;
+    $("level-label").textContent = lv > bank.length
+      ? `Level ${lv.toLocaleString()} · ${n}×${n} · Board ${puzzle.bankIndex + 1}`
+      : `Level ${lv} · ${n}×${n}`;
     renderRecords();
   }
 
@@ -355,16 +357,29 @@
     const s = (t - m * 60).toFixed(1).padStart(4, "0");
     return `${m}:${s}`;
   }
+  // Records belong to the board (1-200), so rotated/recolored replays share them.
+  function boardId() { return puzzle.bankIndex + 1; }
+  function migrateBests() {
+    // older saves kept bests by level number; move them to board numbers
+    if (save.boardBest) return;
+    save.boardBest = {};
+    for (const [lv, ms] of Object.entries(save.best || {})) {
+      const b = bankPick(Number(lv)).idx + 1;
+      if (!save.boardBest[b] || ms < save.boardBest[b]) save.boardBest[b] = ms;
+    }
+    writeSave();
+  }
   function renderRecords() {
-    const mine = save.best[level];
+    const mine = save.boardBest[boardId()];
     $("rec-mine").textContent = mine ? fmtRecord(mine) : "–";
     const lb = window.Leaderboard;
     const lvAtRequest = level;
+    const bAtRequest = boardId();
     $("rec-world").textContent = "–";
     $("rec-world-name").textContent = lb.configured() ? "" : "offline";
     worldRecord = null;
     if (!lb.configured()) return;
-    lb.getRecord(lvAtRequest).then((rec) => {
+    lb.getRecord(bAtRequest).then((rec) => {
       if (level !== lvAtRequest) return;
       worldRecord = rec;
       showWorld();
@@ -398,13 +413,13 @@
     save.done[level] = true;
     // Times only count when no hints were used.
     const usedHints = hints < HINTS_PER_LEVEL;
-    const prevBest = save.best[level];
+    const prevBest = save.boardBest[boardId()];
     const isBest = !usedHints && (!prevBest || elapsed < prevBest);
-    if (isBest) { save.best[level] = elapsed; $("rec-mine").textContent = fmtRecord(elapsed); flashRec("rec-mine"); }
+    if (isBest) { save.boardBest[boardId()] = elapsed; $("rec-mine").textContent = fmtRecord(elapsed); flashRec("rec-mine"); }
     let worldNote = "";
     const lbx = window.Leaderboard;
     const recordPromise = (!usedHints && lbx.configured())
-      ? lbx.submitTime(level, elapsed).catch(() => false)
+      ? lbx.submitTime(boardId(), elapsed).catch(() => false)
       : Promise.resolve(false);
     recordPromise.then((isWorld) => {
       if (isWorld) {
@@ -771,10 +786,11 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=23")
+  fetch("boards.json?v=24")
     .then((r) => r.json())
     .then((data) => {
       bank = data;
+      migrateBests();
       showHome();
     })
     .catch(() => {
