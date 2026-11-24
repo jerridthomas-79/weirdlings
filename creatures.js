@@ -1,22 +1,24 @@
 // Original Weirdling creature art, drawn as inline SVG.
 (function (root) {
-  // Colors were re-tuned (Nov 2026) in OKLCH so neighbours like orange/mustard,
+  // Colors were re-tuned twice (Nov 2026) in OKLCH; 2nd pass split greens (deep emerald vs
+  // bright chartreuse lime), earth tones (dark brown, pale sand, amber mustard) and pinks.
+  // Originally re-tuned so neighbours like orange/mustard,
   // blue/slate, green/lime and pink/magenta are more saturated and easier to tell apart.
   // tile = square color, light = square behind a placed weirdling, body = creature
   const REGION_COLORS = [
-    { tile: "#FFA9CA", light: "#FFE2EC", body: "#E177A1" }, // pink
-    { tile: "#FF8D44", light: "#FFE5D7", body: "#E05900" }, // orange
-    { tile: "#F2BB25", light: "#F6EAD1", body: "#CF8E00" }, // mustard
-    { tile: "#44BE56", light: "#DDF2DE", body: "#00980C" }, // green
-    { tile: "#00B3AC", light: "#D2F3F0", body: "#008F89" }, // teal
-    { tile: "#40A7EE", light: "#D8EFFF", body: "#007ED2" }, // blue
-    { tile: "#946CDB", light: "#EEE7FF", body: "#713ABE" }, // purple
-    { tile: "#AA6743", light: "#FFE5D7", body: "#8C3800" }, // brown
-    { tile: "#99B2DE", light: "#DFECFF", body: "#6889C6" }, // slate
-    { tile: "#ED5350", light: "#FFE3DF", body: "#C90019" }, // red
-    { tile: "#AFE74B", light: "#E5F0D7", body: "#82BE00" }, // lime
-    { tile: "#D55FB8", light: "#FCE3F3", body: "#B12195" }, // magenta
-    { tile: "#E2C69B", light: "#F8E9D2", body: "#C29A5A" }, // sand
+    { tile: "#FFA2CD", light: "#FFE2EE", body: "#E16EA5" }, // pink
+    { tile: "#FF7D30", light: "#FFE5D8", body: "#DD4500" }, // orange
+    { tile: "#F9BC1E", light: "#F6EAD1", body: "#D68F00" }, // mustard
+    { tile: "#0FA44D", light: "#DCF2DF", body: "#007F0C" }, // green
+    { tile: "#09B8BA", light: "#D1F3F3", body: "#009397" }, // teal
+    { tile: "#3E96EA", light: "#DAEEFF", body: "#006CCE" }, // blue
+    { tile: "#8B65D8", light: "#EDE7FF", body: "#6932BB" }, // purple
+    { tile: "#8C5331", light: "#FFE5D7", body: "#6E2500" }, // brown
+    { tile: "#A5B7DF", light: "#E0EBFF", body: "#748EC7" }, // slate
+    { tile: "#E64340", light: "#FFE3DF", body: "#BE0004" }, // red
+    { tile: "#C5EE37", light: "#E7EFD6", body: "#9BC400" }, // lime
+    { tile: "#BF38AA", light: "#FBE3F5", body: "#960084" }, // magenta
+    { tile: "#E2D3AF", light: "#F5EAD1", body: "#C0A86F" }, // sand
   ];
 
   const INK = "#2B2340";
@@ -121,7 +123,7 @@
     c24: { w: 840, h: 829, eyes: [] },
   };
   const HERO_META_get = (id) => HERO_META[id] || { w: 1, h: 1, eyes: [] };
-  const ART_V = 5;
+  const ART_V = 6;
   const CREATURES = [
     { id: "c01", colors: [8, 12] },      // shaggy one-eyed sad fluff
     { id: "c02", colors: [11, 0] },      // two-headed bird

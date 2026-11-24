@@ -715,3 +715,14 @@ h1 {
   font-size: 13px; line-height: 17px; font-weight: 900;
   text-align: center;
 }
+
+/* rules: three rule cards with little pictures */
+.rule-cards { list-style: none; padding: 0; margin: 10px 0 8px; display: flex; flex-direction: column; gap: 8px; }
+.rule-cards li {
+  display: flex; align-items: center; gap: 12px;
+  background: #f1e8da; border-radius: 16px; padding: 8px 12px 8px 8px;
+  line-height: 1.25; text-align: left;
+}
+.rule-cards .rule-pic { width: 58px; height: 58px; flex: none; overflow: visible; }
+.rule-cards b { display: block; font-size: 17px; font-weight: 900; }
+.rule-cards small { display: block; font-size: 13px; opacity: .75; font-weight: 700; margin-top: 2px; }

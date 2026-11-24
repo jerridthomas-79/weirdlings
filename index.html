@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json?v=33">
   <link rel="preload" href="assets/bg.jpg?v=33" as="image">
   <link rel="preload" href="assets/logo.webp" as="image" type="image/webp">
-  <link rel="stylesheet" href="style.css?v=36">
+  <link rel="stylesheet" href="style.css?v=37">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute">
@@ -123,7 +123,7 @@
       <div id="board" class="board" role="grid" aria-label="Puzzle board"></div>
     </main>
 
-    <p class="tip" id="tip">Tap to mark ✕ · double-tap to place a weirdling</p>
+    <p class="tip" id="tip">Tap to mark ✕ · double-tap to place a creature</p>
 
     <nav class="tools">
       <button class="tool" id="btn-hint"><span class="tool-ic"><svg class="ui-icon" viewBox="0 0 64 64" aria-hidden="true">
@@ -168,13 +168,12 @@
     <div class="card">
       <h2>How to play</h2>
       <div class="rules-demo" id="rules-demo"></div>
-      <ul class="rules">
-        <li>Place <b>one weirdling</b> in every <b>row</b>.</li>
-        <li>…and one in every <b>column</b>.</li>
-        <li>…and one in every <b>colored patch</b>.</li>
-        <li>Weirdlings are shy: they <b>can't touch</b>, not even corner to corner.</li>
-      </ul>
-      <p class="small">Tap a square to mark it ✕ when you know a weirdling can't go there (tap it again later to clear it). Double-tap a square quickly to place a weirdling. Drag across squares to mark lots at once. A wrong guess costs a ♥ — lose all three and you start the level over.</p>
+      <ol class="rules rule-cards">
+        <li><svg class="rule-pic" viewBox="-3 -3 66 66" aria-hidden="true"><rect x="-1" y="1" width="62" height="62" rx="9" fill="#2B2340" opacity=".2"/><rect x="0" y="0" width="60" height="60" rx="8" fill="#fff"/><rect x="1.6" y="1.6" width="16.8" height="16.8" rx="3.6" fill="#FFA9CA"/><rect x="21.6" y="1.6" width="16.8" height="16.8" rx="3.6" fill="#FFA9CA"/><rect x="41.6" y="1.6" width="16.8" height="16.8" rx="3.6" fill="#AFE74B"/><rect x="1.6" y="21.6" width="16.8" height="16.8" rx="3.6" fill="#FFA9CA"/><rect x="21.6" y="21.6" width="16.8" height="16.8" rx="3.6" fill="#AFE74B"/><rect x="41.6" y="21.6" width="16.8" height="16.8" rx="3.6" fill="#AFE74B"/><rect x="1.6" y="41.6" width="16.8" height="16.8" rx="3.6" fill="#40A7EE"/><rect x="21.6" y="41.6" width="16.8" height="16.8" rx="3.6" fill="#40A7EE"/><rect x="41.6" y="41.6" width="16.8" height="16.8" rx="3.6" fill="#AFE74B"/><circle cx="10.0" cy="10.0" r="6.5" fill="#E177A1" stroke="#2B2340" stroke-width="1.6"/><circle cx="7.7" cy="9.0" r="1.8" fill="#fff"/><circle cx="12.3" cy="9.0" r="1.8" fill="#fff"/><circle cx="8.1" cy="9.3" r="0.8" fill="#2B2340"/><circle cx="12.6" cy="9.3" r="0.8" fill="#2B2340"/><circle cx="50.0" cy="30.0" r="6.5" fill="#82BE00" stroke="#2B2340" stroke-width="1.6"/><circle cx="47.7" cy="29.0" r="1.8" fill="#fff"/><circle cx="52.3" cy="29.0" r="1.8" fill="#fff"/><circle cx="48.0" cy="29.4" r="0.8" fill="#2B2340"/><circle cx="52.6" cy="29.4" r="0.8" fill="#2B2340"/><circle cx="10.0" cy="50.0" r="6.5" fill="#007ED2" stroke="#2B2340" stroke-width="1.6"/><circle cx="7.7" cy="49.0" r="1.8" fill="#fff"/><circle cx="12.3" cy="49.0" r="1.8" fill="#fff"/><circle cx="8.1" cy="49.4" r="0.8" fill="#2B2340"/><circle cx="12.6" cy="49.4" r="0.8" fill="#2B2340"/></svg><span><b>1 creature per color</b><small>Every colored patch gets exactly one.</small></span></li>
+        <li><svg class="rule-pic" viewBox="-3 -3 66 66" aria-hidden="true"><rect x="-1" y="1" width="62" height="62" rx="9" fill="#2B2340" opacity=".2"/><rect x="0" y="0" width="60" height="60" rx="8" fill="#fff"/><rect x="1.6" y="1.6" width="16.8" height="16.8" rx="3.6" fill="#F2BB25"/><rect x="21.6" y="1.6" width="16.8" height="16.8" rx="3.6" fill="#F2BB25"/><rect x="41.6" y="1.6" width="16.8" height="16.8" rx="3.6" fill="#F2BB25"/><rect x="1.6" y="21.6" width="16.8" height="16.8" rx="3.6" fill="#F2BB25"/><rect x="21.6" y="21.6" width="16.8" height="16.8" rx="3.6" fill="#F2BB25"/><rect x="41.6" y="21.6" width="16.8" height="16.8" rx="3.6" fill="#F2BB25"/><rect x="1.6" y="41.6" width="16.8" height="16.8" rx="3.6" fill="#F2BB25"/><rect x="21.6" y="41.6" width="16.8" height="16.8" rx="3.6" fill="#F2BB25"/><rect x="41.6" y="41.6" width="16.8" height="16.8" rx="3.6" fill="#F2BB25"/><circle cx="10.0" cy="10.0" r="6.5" fill="#CF8E00" stroke="#2B2340" stroke-width="1.6"/><circle cx="7.7" cy="9.0" r="1.8" fill="#fff"/><circle cx="12.3" cy="9.0" r="1.8" fill="#fff"/><circle cx="8.1" cy="9.3" r="0.8" fill="#2B2340"/><circle cx="12.6" cy="9.3" r="0.8" fill="#2B2340"/><circle cx="30.0" cy="30.0" r="6.5" fill="#CF8E00" stroke="#2B2340" stroke-width="1.6"/><circle cx="27.7" cy="29.0" r="1.8" fill="#fff"/><circle cx="32.3" cy="29.0" r="1.8" fill="#fff"/><circle cx="28.1" cy="29.4" r="0.8" fill="#2B2340"/><circle cx="32.6" cy="29.4" r="0.8" fill="#2B2340"/><circle cx="40" cy="40" r="0" fill="none"/><g transform="translate(46 14)"><circle r="10" fill="#fff" stroke="#ED5350" stroke-width="3.2"/><path d="M-6 -6 L6 6 M6 -6 L-6 6" stroke="#ED5350" stroke-width="3.2" stroke-linecap="round"/></g></svg><span><b>No creatures can touch</b><small>Not side by side, and not even corner to corner.</small></span></li>
+        <li><svg class="rule-pic" viewBox="-3 -3 66 66" aria-hidden="true"><rect x="-1" y="1" width="62" height="62" rx="9" fill="#2B2340" opacity=".2"/><rect x="0" y="0" width="60" height="60" rx="8" fill="#fff"/><rect x="1.6" y="1.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="16.6" y="1.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="31.6" y="1.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="46.6" y="1.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="1.6" y="16.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="16.6" y="16.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="31.6" y="16.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="46.6" y="16.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="1.6" y="31.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="16.6" y="31.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="31.6" y="31.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="46.6" y="31.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="1.6" y="46.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="16.6" y="46.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="31.6" y="46.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><rect x="46.6" y="46.6" width="11.8" height="11.8" rx="2.7" fill="#99B2DE"/><circle cx="22.5" cy="7.5" r="5.0" fill="#6889C6" stroke="#2B2340" stroke-width="1.6"/><circle cx="20.8" cy="6.8" r="1.4" fill="#fff"/><circle cx="24.2" cy="6.8" r="1.4" fill="#fff"/><circle cx="21.0" cy="7.0" r="0.7" fill="#2B2340"/><circle cx="24.5" cy="7.0" r="0.7" fill="#2B2340"/><circle cx="52.5" cy="22.5" r="5.0" fill="#6889C6" stroke="#2B2340" stroke-width="1.6"/><circle cx="50.8" cy="21.8" r="1.4" fill="#fff"/><circle cx="54.2" cy="21.8" r="1.4" fill="#fff"/><circle cx="51.0" cy="22.0" r="0.7" fill="#2B2340"/><circle cx="54.5" cy="22.0" r="0.7" fill="#2B2340"/><circle cx="7.5" cy="37.5" r="5.0" fill="#6889C6" stroke="#2B2340" stroke-width="1.6"/><circle cx="5.8" cy="36.8" r="1.4" fill="#fff"/><circle cx="9.2" cy="36.8" r="1.4" fill="#fff"/><circle cx="6.0" cy="37.0" r="0.7" fill="#2B2340"/><circle cx="9.5" cy="37.0" r="0.7" fill="#2B2340"/><circle cx="37.5" cy="52.5" r="5.0" fill="#6889C6" stroke="#2B2340" stroke-width="1.6"/><circle cx="35.8" cy="51.8" r="1.4" fill="#fff"/><circle cx="39.2" cy="51.8" r="1.4" fill="#fff"/><circle cx="36.0" cy="52.0" r="0.7" fill="#2B2340"/><circle cx="39.5" cy="52.0" r="0.7" fill="#2B2340"/><rect x="1" y="31" width="58" height="13" rx="4" fill="none" stroke="#FF5C8A" stroke-width="2.2"/><rect x="16" y="1" width="13" height="58" rx="4" fill="none" stroke="#FF5C8A" stroke-width="2.2" stroke-dasharray="3 2.5"/></svg><span><b>1 creature per row and column</b><small>Every row and every column gets exactly one.</small></span></li>
+      </ol>
+      <p class="small"><b>Tap</b> a square to mark ✕ where a creature can't go (tap again to clear). <b>Double-tap</b> to place a creature. <b>Drag</b> to mark lots of squares at once. A wrong guess costs a ♥ — lose all three and the board starts over.</p>
       <button class="big-btn" data-close>Let's go!</button>
     </div>
   </div>
@@ -272,7 +271,7 @@
   <script src="config.js?v=33"></script>
   <script src="leaderboard.js?v=33"></script>
   <script src="puzzle.js?v=33"></script>
-  <script src="creatures.js?v=39"></script>
+  <script src="creatures.js?v=40"></script>
   <script src="game.js?v=36"></script>
 </body>
 </html>

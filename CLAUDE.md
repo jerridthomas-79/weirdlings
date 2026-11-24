@@ -32,7 +32,9 @@ no two may touch, even diagonally. Every board has exactly one solution.
   so remixes share them (`boardId() = puzzle.bankIndex + 1`).
 - Colors per level are a seeded shuffle of the 13 colors (`colorOf`). The 13 colors were re-tuned
   in OKLCH (owner: "colors too similar") so close pairs (orange/mustard, blue/slate, green/lime,
-  pink/magenta, teal/blue) are more saturated; keep the minimum OKLab distance around 0.1 if you change them.
+  pink/magenta, teal/blue) are more saturated. A 2nd pass (owner: greens, earth tones and pinks still
+  too alike) spread lightness too: deep emerald green vs bright chartreuse lime, dark brown vs pale
+  sand vs amber mustard, light pink vs deep magenta. Minimum OKLab distance is now ~0.12; keep it there.
 
 ## Modes (home screen picker, saved as `save.mode`)
 - **Journey**: level by level, as above. Only Journey wins change progress, stars and the leaderboard total.
@@ -70,6 +72,9 @@ no two may touch, even diagonally. Every board has exactly one solution.
 - No Undo button. Tools under the board: Hint (2 per level), Restart, Rules.
 - Haptics: light tap for ✕/drag per square, double tap for placing, triple for a mistake
   (iOS 18+ uses the hidden `<input switch>` trick; Android uses `navigator.vibrate`).
+- Rules screen (`#modal-help`) shows three rule cards with little pictures, in the owner's words:
+  "1 creature per color", "No creatures can touch", "1 creature per row and column".
+  Player-facing text says "creature" (not "weirdling") for the pieces.
 - Zoom is blocked everywhere (double-tap, pinch, ctrl/cmd zoom). Inputs use 16px text.
 
 ## Look (owner-specified)
