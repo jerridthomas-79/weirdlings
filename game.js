@@ -748,15 +748,21 @@
   const INKC = "#2B2340";
   const UI_ICONS = {
     home: () => `<svg class="ui-icon" viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M10 31 L32 11 L54 31 L54 56 L10 56Z" fill="${INKC}" opacity=".25" transform="translate(1 3)"/>
-      <rect x="40" y="12" width="8" height="14" rx="2" fill="#B07350" stroke="${INKC}" stroke-width="3"/>
-      <path d="M13 30 L13 54 Q13 56 15 56 L49 56 Q51 56 51 54 L51 30 L32 14Z" fill="#FFE6D1" stroke="${INKC}" stroke-width="3.5" stroke-linejoin="round"/>
-      <path d="M6 32 L32 9 L58 32" fill="none" stroke="${INKC}" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M6 32 L32 9 L58 32" fill="none" stroke="#E8635F" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M26 56 L26 42 Q26 37 32 37 Q38 37 38 42 L38 56Z" fill="#9B7EDB" stroke="${INKC}" stroke-width="3" stroke-linejoin="round"/>
-      <circle cx="35" cy="47" r="1.6" fill="#FFE873"/>
-      <rect x="16" y="34" width="7" height="7" rx="1.5" fill="#6CBAE8" stroke="${INKC}" stroke-width="2.2"/>
-      <rect x="41" y="34" width="7" height="7" rx="1.5" fill="#6CBAE8" stroke="${INKC}" stroke-width="2.2"/>
+      <path d="M17 30 L17 55 L47 55 L47 30Z" fill="${INKC}" opacity=".25" transform="translate(1 3)"/>
+      <path d="M18 28 Q16 44 15 54 Q15 57 18 57 L46 57 Q49 57 49 54 Q48 44 46 28Z" fill="#FFF1DC" stroke="${INKC}" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M21 34 Q20 44 19.5 52" stroke="#E8D2B4" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M26 57 L26 47 Q26 41 32 41 Q38 41 38 47 L38 57Z" fill="#9B7EDB" stroke="${INKC}" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="35" cy="50" r="1.6" fill="#FFE873"/>
+      <circle cx="42.5" cy="44" r="3.4" fill="#6CBAE8" stroke="${INKC}" stroke-width="2.2"/>
+      <path d="M41.2 42.6 L43 42.6" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M4 31 C4 15 17 5 32 5 C47 5 60 15 60 31 Q60 35 55 35 L9 35 Q4 35 4 31Z" fill="${INKC}" opacity=".25" transform="translate(1 3)"/>
+      <path d="M4 31 C4 15 17 5 32 5 C47 5 60 15 60 31 Q60 35 55 35 L9 35 Q4 35 4 31Z" fill="#E8635F" stroke="${INKC}" stroke-width="3.5" stroke-linejoin="round"/>
+      <ellipse cx="21" cy="17" rx="5.5" ry="4" fill="#FFF1DC"/>
+      <ellipse cx="37" cy="12" rx="4.5" ry="3.2" fill="#FFF1DC"/>
+      <ellipse cx="48" cy="23" rx="5" ry="3.8" fill="#FFF1DC"/>
+      <ellipse cx="31" cy="26" rx="3.6" ry="2.8" fill="#FFF1DC"/>
+      <ellipse cx="11.5" cy="28" rx="2.8" ry="2.2" fill="#FFF1DC"/>
+      <path d="M13 14 Q19 8 26 7" stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none" opacity=".55"/>
     </svg>`,
     sound: (on) => `<svg class="ui-icon" viewBox="0 0 64 64" aria-hidden="true">
       <path d="M8 24 L20 24 L34 11 L34 53 L20 40 L8 40Z" fill="${INKC}" opacity=".25" transform="translate(1 3)"/>
@@ -888,7 +894,7 @@
   window.__weirdlings = { puzzleForLevel: (lv) => puzzleForLevel(lv), bankPick: (lv) => bankPick(lv) }; // for testing
 
   // ---------- go ----------
-  fetch("boards.json?v=28")
+  fetch("boards.json?v=30")
     .then((r) => r.json())
     .then((data) => {
       bank = data;
