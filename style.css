@@ -33,7 +33,7 @@ html, body {
 body {
   position: fixed; inset: 0;
   /* cave background, shown behind every page */
-  background: var(--bg2) url("assets/bg.jpg?v=30") center / cover no-repeat;
+  background: var(--bg2) url("assets/bg.jpg?v=31") center / cover no-repeat;
 } /* stop the page bouncing/scrolling */
 
 #app {
@@ -195,6 +195,28 @@ h1 {
 
 .board.won .weirdling { animation: dance .8s ease-in-out infinite alternate; }
 @keyframes dance { from { transform: translateY(0) rotate(-6deg); } to { transform: translateY(-12%) rotate(6deg); } }
+
+/* ---------- background crystal twinkles (all pages) ---------- */
+#bg-fx { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#home, #app { position: relative; z-index: 1; }
+.fx-glow {
+  position: absolute; border-radius: 50%;
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: fxglow 2s ease-in-out forwards;
+}
+@keyframes fxglow { 0% { opacity: 0; } 45% { opacity: 1; } 100% { opacity: 0; } }
+.fx-sparkle {
+  position: absolute;
+  opacity: 0;
+  animation: fxsparkle 1.3s ease-in-out forwards;
+}
+.fx-sparkle svg { width: 100%; height: 100%; display: block; }
+@keyframes fxsparkle {
+  0% { opacity: 0; transform: scale(.2) rotate(0deg); }
+  50% { opacity: .95; transform: scale(1) rotate(45deg); }
+  100% { opacity: 0; transform: scale(.3) rotate(90deg); }
+}
 
 /* ---------- Home screen ---------- */
 #home {
