@@ -7,7 +7,11 @@
   --gold: #FFC93C;
   /* Sized for iPhone 14 Pro Max (430 x 932) and similar phones:
      as wide as the screen allows, leaving room for header and buttons. */
-  --board-size: min(calc(100vw - 20px), calc(100dvh - 300px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 560px);
+  /* thick white frame drawn outward around the board (doesn't take tile space) */
+  --frame: 9px;
+  --board-size: min(calc(100vw - 20px - 2 * var(--frame)), calc(100dvh - 300px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 560px);
+  /* width of the bars above/below the board, lined up with the outside of the frame */
+  --ui-w: calc(var(--board-size) + 2 * var(--frame));
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -47,7 +51,7 @@ body {
 }
 
 .top {
-  width: var(--board-size);
+  width: var(--ui-w);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -79,7 +83,7 @@ h1 {
 .icon-btn:active { transform: scale(.92); }
 
 .status {
-  width: var(--board-size);
+  width: var(--ui-w);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -100,7 +104,13 @@ h1 {
 @keyframes heartpop { 0% { transform: scale(1.5); } 100% { transform: scale(.8); } }
 .timer { font-variant-numeric: tabular-nums; }
 
-.board-wrap { padding: 6px; flex: 1; display: flex; align-items: center; }
+.board-wrap { padding: calc(var(--frame) + 4px) 0; flex: 1; display: flex; align-items: center; }
+/* invisible touch margin around the board: taps/drags just past the edge still hit the edge tiles */
+.board::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * (var(--frame) + 12px));
+}
 .board {
   -webkit-user-select: none;
   width: var(--board-size);
@@ -113,9 +123,10 @@ h1 {
   background: #fff;
   /* drop shadow so the board lifts off the cave background */
   box-shadow:
-    0 6px 0 rgba(0,0,0,.22),
-    0 16px 24px rgba(0,0,0,.55),
-    0 30px 60px rgba(0,0,0,.5);
+    0 0 0 var(--frame) #fff,
+    0 6px 0 var(--frame) rgba(0,0,0,.22),
+    0 16px 24px var(--frame) rgba(0,0,0,.55),
+    0 30px 60px var(--frame) rgba(0,0,0,.5);
   touch-action: none;
 }
 .board.shake { animation: shake .4s; }
@@ -397,7 +408,7 @@ h1 {
 
 /* best time / all-time record bar */
 .records {
-  width: var(--board-size);
+  width: var(--ui-w);
   display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
 }
 .rec {
@@ -423,7 +434,7 @@ h1 {
 }
 
 .tools {
-  width: var(--board-size);
+  width: var(--ui-w);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
@@ -562,7 +573,7 @@ h1 {
 .board.pop { animation: boardpop .85s cubic-bezier(.3, 1.4, .5, 1); }
 @keyframes boardpop {
   0%   { transform: scale(1); }
-  28%  { transform: scale(1.085); box-shadow: 0 6px 0 rgba(0,0,0,.22), 0 0 34px 10px rgba(140, 220, 255, .85), 0 0 70px 24px rgba(255, 120, 240, .45); }
+  28%  { transform: scale(1.085); box-shadow: 0 0 0 var(--frame) #fff, 0 6px 0 var(--frame) rgba(0,0,0,.22), 0 0 34px calc(var(--frame) + 10px) rgba(140, 220, 255, .85), 0 0 70px calc(var(--frame) + 24px) rgba(255, 120, 240, .45); }
   55%  { transform: scale(.975); }
   78%  { transform: scale(1.015); }
   100% { transform: scale(1); }
@@ -601,7 +612,7 @@ h1 {
 .crowd {
   --h: 60px;
   position: relative;
-  width: var(--board-size);
+  width: var(--ui-w);
   flex: 0 1 120px;
   min-height: 0;
   pointer-events: none;
@@ -678,3 +689,29 @@ h1 {
 #app { gap: 8px; }
 #app .tools { margin-top: 2px; }
 #app .tool { padding: 9px 4px; }
+
+/* game screen tools: same chunky style as the home buttons, with cartoon icons */
+#app .tools { gap: 8px; }
+#app .tool {
+  position: relative;
+  background: #e9dfcf;
+  border-radius: 16px;
+  padding: 7px 4px 8px;
+  font-size: 14px; font-weight: 900;
+  gap: 1px;
+  box-shadow: 0 5px 0 #c9bba5;
+}
+#app .tool:active { transform: translateY(4px); box-shadow: 0 1px 0 #c9bba5; }
+#app .tool:disabled { opacity: .5; }
+#app .tool .tool-ic { position: relative; display: block; width: 44px; height: 44px; line-height: 0; font-size: 0; }
+#app .tool .tool-ic .ui-icon { width: 44px; height: 44px; transition: transform .15s; }
+#app .tool:active .ui-icon { transform: scale(.9) rotate(-6deg); }
+#app .tool .tool-ic b {
+  position: absolute; top: -4px; right: -12px;
+  min-width: 22px; height: 22px; padding: 0 5px;
+  border-radius: 11px;
+  background: var(--accent); color: #fff;
+  border: 2.5px solid var(--ink);
+  font-size: 13px; line-height: 17px; font-weight: 900;
+  text-align: center;
+}

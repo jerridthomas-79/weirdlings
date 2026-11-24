@@ -773,10 +773,25 @@
 
   // ---------- pointer input (tap + drag to mark) ----------
   let drag = null;
+  // Works out the square from the finger position by geometry, so the gaps between
+  // squares, the white frame and a little margin past it all count as the nearest
+  // square (forgiving taps and swipes along the edges of the grid).
+  const EDGE_SLOP = 12; // px past the white frame that still counts
   function cellFromPoint(x, y) {
-    const el = document.elementFromPoint(x, y);
-    const c = el && el.closest(".cell");
-    return c && boardEl.contains(c) ? Number(c.dataset.i) : null;
+    if (!n) return null;
+    const r = boardEl.getBoundingClientRect();
+    const cs = getComputedStyle(boardEl);
+    const scale = r.width / (boardEl.offsetWidth || r.width); // board may be mid-animation
+    const frame = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--frame")) || 0) * scale;
+    const slop = frame + EDGE_SLOP;
+    if (x < r.left - slop || x > r.right + slop || y < r.top - slop || y > r.bottom + slop) return null;
+    const pad = parseFloat(cs.paddingLeft) * scale;
+    const gap = (parseFloat(cs.columnGap) || 0) * scale;
+    const pitch = (r.width - 2 * pad + gap) / n;
+    const clamp = (v) => Math.max(0, Math.min(n - 1, v));
+    const col = clamp(Math.floor((x - r.left - pad + gap / 2) / pitch));
+    const row = clamp(Math.floor((y - r.top - pad + gap / 2) / pitch));
+    return row * n + col;
   }
   boardEl.addEventListener("pointerdown", (e) => {
     const i = cellFromPoint(e.clientX, e.clientY);

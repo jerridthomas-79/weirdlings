@@ -74,7 +74,12 @@ no two may touch, even diagonally. Every board has exactly one solution.
 
 ## Look (owner-specified)
 - Board: rounded colored tiles with small gaps inside a white rounded frame, strong drop
-  shadow. No dark patch outlines. **No glass effect** (owner removed it).
+  shadow. No dark patch outlines. **No glass effect** (owner removed it). The frame is thickened
+  outward by `--frame` (9px, a white box-shadow spread) without taking tile space; the bars above
+  and below use `--ui-w` (board + frame) so they line up with the frame's outside edge.
+- Touch is forgiving: `cellFromPoint()` maps the finger position to the nearest square by
+  geometry, so gaps, the frame and `EDGE_SLOP` (12px) past it count as the edge squares
+  (`.board::before` extends the board's touch area). Swiping just outside an edge still marks that row/column.
 - ✕ marks: bold white, nearly tile-wide, dark drop shadow. Tile keeps its color under a creature.
 - Board markers are 110% of their tile (just bigger than the tile) with a dark drop shadow;
   `.cell.has-w` lifts that tile above its neighbours.
@@ -91,8 +96,9 @@ no two may touch, even diagonally. Every board has exactly one solution.
 - Stars: 3 = no mistakes, 2 = one, 1 = two. 3D gold twinkling stars on the win screen;
   best stars per level shown in the level chooser (saved per device).
 - Icons: custom cartoon SVGs (thick #2B2340 outline, bright fills): Levels, Leaderboard,
-  How to play, Sound/Vibration (on/off variants), Home (mushroom house). Hint/Restart/Rules
-  still use emoji.
+  How to play, Sound/Vibration (on/off variants), Home (mushroom house), and the game-screen tools:
+  Hint (glowing bulb, hint count in a pink badge), Restart (teal circular arrow), Rules (open book).
+  The tool buttons use the same chunky ghost style as the home buttons.
 
 ## Online features (Supabase project "weirdlings", ref `kbaarcakmjbcprlkeavc`, us-east-2)
 - `players` table + `leaderboard` view (security_invoker) + `submit_score()`: total levels
