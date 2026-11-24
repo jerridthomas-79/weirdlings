@@ -41,12 +41,15 @@ no two may touch, even diagonally. Every board has exactly one solution.
   repeats on a board. Pink and brown have no creature of their own and borrow backups.
 - Home screen: `pickHero()` shows a random creature from the whole library each visit
   (never the same twice in a row). The little 3×3 home board uses its own random cast.
-- Board markers (`assets/creatures/cNN.webp`, 320×320) are **sticker icons**, not the full art:
-  head close-up, cartoon filter (flat colors + dark ink lines), rounded cut edge, thick #2B2340 outline with a thin cream rim (matches the
-  owner's original toad marker). The full art is only used on the home screen (`heroes/`).
+- Board markers (`assets/creatures/cNN.webp`, 320×320) are **hand-drawn cartoon sticker heads**
+  (owner's request: "your own style", like the original toad marker): SVG drawings in
+  `tools/markers/heads.py` (one function per creature, thick #2B2340 strokes, gradient fills, big
+  eyes), rendered by `tools/markers/render.py` (Playwright → `tools/markers/raw/`), then
+  `tools/markers/finish.py` adds the cream border + dark outer ring and writes the .webp-ready PNGs.
+  The full art is only used on the home screen (`heroes/`).
 - **To add a creature:** trim the transparent PNG, make `assets/heroes/cNN.webp` (longest side
-  840), make the marker with `python3 tools/make-marker.py art.png assets/creatures/cNN.webp x0 y0 x1 y1`
-  (box = the head area as fractions; check it on a colored tile), add
+  840), draw a new `cNN()` head in `heads.py` (add it to `DESIGNS`), render + finish, save as
+  `assets/creatures/cNN.webp`, add
   `{ id: "cNN", colors: [main, backup...] }` to `CREATURES`, and bump `ART_V` if any image changed.
   `creatureSVG()` greys/tilts image creatures for wrong guesses.
 
