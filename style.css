@@ -771,3 +771,17 @@ body:not(.symbols-on) .home-grid .tile { box-shadow: inset 0 0 0 2.5px rgba(18, 
   70%  { opacity: 1; }
   to   { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1); opacity: 0; }
 }
+
+/* resting markers breathe between the creature and its patch color:
+   ~2.8s creature → fade to a faint ghost so the tile color shows → hold ~1.1s → back. Repeats. */
+.board:not(.won) .cell.has-w:not(.wrong) .weirdling:not(.pulse) {
+  animation: plop .45s cubic-bezier(.3,1.8,.5,1), colorpeek 5s ease-in-out var(--peek-delay, 0s) infinite;
+}
+@keyframes colorpeek {
+  0%, 56%   { opacity: 1; }
+  64%, 86%  { opacity: .28; }
+  94%, 100% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .board:not(.won) .cell.has-w:not(.wrong) .weirdling:not(.pulse) { animation-duration: .45s, 8s; }
+}

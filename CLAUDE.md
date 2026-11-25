@@ -97,6 +97,10 @@ no two may touch, even diagonally. Every board has exactly one solution.
   by a small script from the owner's reference image), nearly tile-wide, dark drop shadow (.64/.37 alpha). Tile keeps its color under a creature.
 - Board markers are 110% of their tile (just bigger than the tile) with a dark drop shadow;
   `.cell.has-w` lifts that tile above its neighbours.
+- Resting markers cycle creature ⇄ color (owner: see the cute creature but still know its color on big
+  grids): CSS `colorpeek`, 5s (`PEEK_MS`): ~2.8s full creature, fade to 28% opacity so the tile color
+  shows (~1.1s), back. All markers share one clock (`--peek-delay` set in `renderCell`); a newly placed
+  one stays a creature until the next shared cycle. Stops on win (dance) and for wrong/pulse states.
 - Creature found (correct place or hint): `stampCell()` stamps it onto the tile (Web Animations, so it
   doesn't fight the CSS `plop`): the icon drops in 2.5× and tilted, slams flat with a squash at 36%,
   the tile presses in, then a white ring + 7 ink specks (patch body color/white) pop out and the
