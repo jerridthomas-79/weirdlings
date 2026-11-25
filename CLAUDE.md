@@ -76,7 +76,11 @@ no two may touch, even diagonally. Every board has exactly one solution.
 
 ## Controls (owner-specified; keep them)
 - Tap = toggle ✕. Second tap on the same square **within 1 second** = place a weirdling.
-- Drag across squares to mark many ✕ (or erase if the drag starts on an ✕).
+- Drag across squares to mark many ✕ (or erase if the drag starts on an ✕). Drags **lock to the row
+  or column** of the first direction moved (`drag.axis`), so finger wobble can't spill into neighbouring
+  lines; squares skipped by a fast flick are filled in; a clear turn (`TURN_TILES` = 1.6 tiles off the
+  line) switches direction from the current square, so L-shapes work. `gridPos()` gives fractional
+  row/col; once locked, the finger can stray outside the board and the line still follows it.
 - No Undo button. Tools under the board: Hint (2 per level), Restart, Rules.
 - Haptics: light tap for ✕/drag per square, double tap for placing, triple for a mistake
   (iOS 18+ uses the hidden `<input switch>` trick; Android uses `navigator.vibrate`).

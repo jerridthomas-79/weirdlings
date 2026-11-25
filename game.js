@@ -910,41 +910,66 @@
   // squares, the white frame and a little margin past it all count as the nearest
   // square (forgiving taps and swipes along the edges of the grid).
   const EDGE_SLOP = 12; // px past the white frame that still counts
-  function cellFromPoint(x, y) {
+  // Finger position → grid position. rowF/colF are unclamped (in tiles), row/col are clamped.
+  function gridPos(x, y) {
     if (!n) return null;
     const r = boardEl.getBoundingClientRect();
     const cs = getComputedStyle(boardEl);
     const scale = r.width / (boardEl.offsetWidth || r.width); // board may be mid-animation
     const frame = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--frame")) || 0) * scale;
     const slop = frame + EDGE_SLOP;
-    if (x < r.left - slop || x > r.right + slop || y < r.top - slop || y > r.bottom + slop) return null;
+    const inside = !(x < r.left - slop || x > r.right + slop || y < r.top - slop || y > r.bottom + slop);
     const pad = parseFloat(cs.paddingLeft) * scale;
     const gap = (parseFloat(cs.columnGap) || 0) * scale;
     const pitch = (r.width - 2 * pad + gap) / n;
-    const clamp = (v) => Math.max(0, Math.min(n - 1, v));
-    const col = clamp(Math.floor((x - r.left - pad + gap / 2) / pitch));
-    const row = clamp(Math.floor((y - r.top - pad + gap / 2) / pitch));
-    return row * n + col;
+    const colF = (x - r.left - pad + gap / 2) / pitch;
+    const rowF = (y - r.top - pad + gap / 2) / pitch;
+    const clamp = (v) => Math.max(0, Math.min(n - 1, Math.floor(v)));
+    return { inside, rowF, colF, row: clamp(rowF), col: clamp(colF) };
+  }
+  function cellFromPoint(x, y) {
+    const g = gridPos(x, y);
+    return g && g.inside ? g.row * n + g.col : null;
   }
   boardEl.addEventListener("pointerdown", (e) => {
     const i = cellFromPoint(e.clientX, e.clientY);
     if (i === null || finished) return;
     e.preventDefault();
-    drag = { start: i, last: i, moved: false, mode: null, changes: [] };
+    drag = { start: i, last: i, moved: false, mode: null, changes: [], sx: e.clientX, sy: e.clientY, axis: null };
     try { boardEl.setPointerCapture(e.pointerId); } catch (err) {}
   });
+  // Swipes lock to the row or column you start along, so a wobbly finger doesn't spill ✕s
+  // into neighbouring lines. A clear turn (1.6+ tiles off the line) switches to the other
+  // direction from where you are, so L-shaped swipes still work.
+  const TURN_TILES = 1.6;
   boardEl.addEventListener("pointermove", (e) => {
     if (!drag) return;
-    const i = cellFromPoint(e.clientX, e.clientY);
-    if (i === null || i === drag.last) return;
-    if (!drag.moved) {
+    const g = gridPos(e.clientX, e.clientY);
+    if (!g) return;
+    if (!drag.axis) {
+      if (!g.inside || g.row * n + g.col === drag.start) return;
+      const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+      drag.axis = Math.abs(dx) >= Math.abs(dy) ? "row" : "col";
+      drag.lineRow = Math.floor(drag.start / n);
+      drag.lineCol = drag.start % n;
       drag.moved = true;
       const s = cells[drag.start];
       drag.mode = s === 0 ? "mark" : s === 1 ? "erase" : null;
       paint(drag.start);
     }
-    drag.last = i;
-    paint(i);
+    const lastRow = Math.floor(drag.last / n), lastCol = drag.last % n;
+    if (drag.axis === "row" && Math.abs(g.rowF - (drag.lineRow + 0.5)) > TURN_TILES) {
+      drag.axis = "col"; drag.lineCol = lastCol;
+    } else if (drag.axis === "col" && Math.abs(g.colF - (drag.lineCol + 0.5)) > TURN_TILES) {
+      drag.axis = "row"; drag.lineRow = lastRow;
+    }
+    const target = drag.axis === "row" ? drag.lineRow * n + g.col : g.row * n + drag.lineCol;
+    if (target === drag.last) return;
+    // walk from the last square to the target along the locked line, filling any skipped squares
+    const step = drag.axis === "row" ? Math.sign(target - drag.last) : Math.sign(target - drag.last) * n;
+    let i = drag.last;
+    while (i !== target) { i += step; paint(i); }
+    drag.last = target;
   });
   function paint(i) {
     if (!drag.mode) return;
