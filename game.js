@@ -369,6 +369,59 @@
     return step.length;
   }
 
+  // Found a creature: its icon comes down on the tile like a rubber stamp —
+  // drops in big and tilted, slams flat, the tile gets pressed, ink specks fly out.
+  const STAMP_MS = 560, STAMP_HIT = 0.36; // impact at 36% of the animation
+  function stampCell(i) {
+    const cell = cellEls[i];
+    const w = cell.querySelector(".weirdling");
+    if (!w) return;
+    const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const tilt = (Math.random() < 0.5 ? -1 : 1) * (10 + Math.random() * 8);
+    w.animate([
+      { transform: `translateY(-28%) scale(2.5) rotate(${tilt}deg)`, opacity: 0,
+        filter: "drop-shadow(0 26px 14px rgba(25,12,45,.35))" },
+      { transform: `translateY(-8%) scale(1.55) rotate(${tilt / 3}deg)`, opacity: 1, offset: 0.24,
+        filter: "drop-shadow(0 14px 8px rgba(25,12,45,.45))" },
+      { transform: "scale(.94, .86)", offset: STAMP_HIT, filter: "drop-shadow(0 1px 1px rgba(25,12,45,.7))" },
+      { transform: "scale(1.1, 1.04)", offset: 0.56 },
+      { transform: "scale(.98)", offset: 0.76 },
+      { transform: "none", filter: "drop-shadow(0 3px 2.5px rgba(25,12,45,.6))" },
+    ], { duration: reduce ? 250 : STAMP_MS, easing: "cubic-bezier(.3,.7,.4,1)" });
+    cell.animate([
+      { transform: "none" },
+      { transform: "none", offset: STAMP_HIT - 0.02 },
+      { transform: "scale(.86)", offset: STAMP_HIT + 0.08 },
+      { transform: "scale(1.05)", offset: 0.68 },
+      { transform: "none" },
+    ], { duration: STAMP_MS, easing: "ease-out" });
+    if (reduce) return;
+    // impact: a ring of ink and a few specks in the creature's color
+    setTimeout(() => {
+      if (!cell.isConnected) return;
+      const ink = REGION_COLORS[regionAt(i)].body;
+      const ring = document.createElement("span");
+      ring.className = "stamp-ring";
+      cell.appendChild(ring);
+      for (let k = 0; k < 7; k++) {
+        const dot = document.createElement("span");
+        dot.className = "stamp-dot";
+        const a = (k / 7) * Math.PI * 2 + Math.random() * 0.5;
+        const dist = cell.offsetWidth * (0.62 + Math.random() * 0.3);
+        dot.style.background = k % 2 ? "#fff" : ink;
+        dot.style.setProperty("--dx", (Math.cos(a) * dist).toFixed(1) + "px");
+        dot.style.setProperty("--dy", (Math.sin(a) * dist).toFixed(1) + "px");
+        dot.style.setProperty("--s", (0.10 + Math.random() * 0.08).toFixed(2));
+        cell.appendChild(dot);
+      }
+      if (!finished) {
+        boardEl.animate([{ transform: "none" }, { transform: "translateY(2px) scale(.996)" }, { transform: "none" }],
+          { duration: 180, easing: "ease-out" });
+      }
+      setTimeout(() => cell.querySelectorAll(".stamp-ring, .stamp-dot").forEach((e) => e.remove()), 650);
+    }, STAMP_MS * STAMP_HIT);
+  }
+
   function isCorrect(i) {
     const r = Math.floor(i / n), c = i % n;
     return puzzle.solution[r] === c;
@@ -377,6 +430,7 @@
   function tryPlace(i) {
     if (isCorrect(i)) {
       setCells([{ i, next: 2 }]);
+      stampCell(i);
       sfx.place();
       haptic.strong();
       checkWin();
@@ -458,6 +512,7 @@
     cellEls[i].classList.remove("hinted");
     void cellEls[i].offsetWidth;
     cellEls[i].classList.add("hinted");
+    stampCell(i);
     sfx.place();
     updateTools();
     updateCrowd(true);

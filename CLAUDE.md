@@ -97,6 +97,10 @@ no two may touch, even diagonally. Every board has exactly one solution.
   by a small script from the owner's reference image), nearly tile-wide, dark drop shadow (.64/.37 alpha). Tile keeps its color under a creature.
 - Board markers are 110% of their tile (just bigger than the tile) with a dark drop shadow;
   `.cell.has-w` lifts that tile above its neighbours.
+- Creature found (correct place or hint): `stampCell()` stamps it onto the tile (Web Animations, so it
+  doesn't fight the CSS `plop`): the icon drops in 2.5× and tilted, slams flat with a squash at 36%,
+  the tile presses in, then a white ring + 7 ink specks (patch body color/white) pop out and the
+  board gives a tiny thump. ~0.56s; reduced-motion gets a short version.
 - Board complete: white flash, each creature pulses in turn and bursts 8 mini copies
   (solid for 15px, fading over the next 10px), then the board pops (`.board.pop`) while crystal
   gems and twinkles (`boardPop()`, pink/ice-blue/violet like the cave crystals) burst out of it,
