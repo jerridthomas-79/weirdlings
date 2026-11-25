@@ -552,7 +552,7 @@ h1 {
 /* 1. darker drop shadow under the ✕ marks */
 .cell .mark,
 .home-grid .tile svg.mark {
-  filter: drop-shadow(0 2px 1.5px rgba(25, 12, 45, .62)) drop-shadow(0 0 1px rgba(25, 12, 45, .35));
+  filter: drop-shadow(0 2px 1.5px rgba(25, 12, 45, .64)) drop-shadow(0 0 1px rgba(25, 12, 45, .37));
 }
 
 /* 4. board markers: just a bit bigger than their tile, with a dark drop shadow */

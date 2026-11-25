@@ -93,7 +93,8 @@ no two may touch, even diagonally. Every board has exactly one solution.
 - Touch is forgiving: `cellFromPoint()` maps the finger position to the nearest square by
   geometry, so gaps, the frame and `EDGE_SLOP` (12px) past it count as the edge squares
   (`.board::before` extends the board's touch area). Swiping just outside an edge still marks that row/column.
-- ✕ marks: bold white, nearly tile-wide, dark drop shadow. Tile keeps its color under a creature.
+- ✕ marks: white hand-painted brush-stroke X (two tapered, slightly curved strokes, path generated
+  by a small script from the owner's reference image), nearly tile-wide, dark drop shadow (.64/.37 alpha). Tile keeps its color under a creature.
 - Board markers are 110% of their tile (just bigger than the tile) with a dark drop shadow;
   `.cell.has-w` lifts that tile above its neighbours.
 - Board complete: white flash, each creature pulses in turn and bursts 8 mini copies
