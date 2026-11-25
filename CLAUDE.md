@@ -98,8 +98,9 @@ no two may touch, even diagonally. Every board has exactly one solution.
 - Board markers are 110% of their tile (just bigger than the tile) with a dark drop shadow;
   `.cell.has-w` lifts that tile above its neighbours.
 - Resting markers cycle creature ⇄ color (owner: see the cute creature but still know its color on big
-  grids): CSS `colorpeek`, 5s (`PEEK_MS`): ~2.8s full creature, fade to 28% opacity so the tile color
-  shows (~1.1s), back. All markers share one clock (`--peek-delay` set in `renderCell`); a newly placed
+  grids): 5s cycle (`PEEK_MS`): ~2.8s full creature, then a flat swatch of the tile's **normal** color
+  (`.peek`, painted with `paintTile`, fades to 80%) covers the marker while the creature dims to 50%
+  (`colorpeek`), ~1.1s, back. Owner wants the plain tile color in that phase, not a darker/bolder one. All markers share one clock (`--peek-delay` set in `renderCell`); a newly placed
   one stays a creature until the next shared cycle. Stops on win (dance) and for wrong/pulse states.
 - Creature found (correct place or hint): `stampCell()` stamps it onto the tile (Web Animations, so it
   doesn't fight the CSS `plop`): the icon drops in 2.5× and tilted, slams flat with a squash at 36%,

@@ -328,7 +328,14 @@
     if (s === 2) {
       // markers fade to their color together: a new one waits (as a creature) for the next shared cycle
       const w = el.querySelector(".weirdling");
-      if (w) w.style.setProperty("--peek-delay", (PEEK_MS - (performance.now() % PEEK_MS)).toFixed(0) + "ms");
+      const delay = (PEEK_MS - (performance.now() % PEEK_MS)).toFixed(0) + "ms";
+      if (w) w.style.setProperty("--peek-delay", delay);
+      // a plain swatch of the tile's own color fades in over the creature in the color phase
+      const sw = document.createElement("span");
+      sw.className = "peek";
+      paintTile(sw, regionAt(i));
+      sw.style.setProperty("--peek-delay", delay);
+      el.appendChild(sw);
     }
     el.setAttribute("aria-label", s === 2 ? "weirdling" : s === 1 ? "marked" : "empty");
   }
