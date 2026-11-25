@@ -88,8 +88,10 @@ no two may touch, even diagonally. Every board has exactly one solution.
 ## Look (owner-specified)
 - Board: rounded colored tiles with small gaps inside a white rounded frame, strong drop
   shadow. No dark patch outlines. **No glass effect** (owner removed it). The frame is thickened
-  outward by `--frame` (9px, a white box-shadow spread) without taking tile space; the bars above
+  outward by `--frame` (6px, a white box-shadow spread) without taking tile space; the bars above
   and below use `--ui-w` (board + frame) so they line up with the frame's outside edge.
+  The board is as wide as the screen allows: `--board-size` = 100vw − 10px − 2×frame (408px on the
+  iPhone), leaving ~5px of background each side (`#app` side padding is 5px). Tile gaps are 6% of a tile.
 - Touch is forgiving: `cellFromPoint()` maps the finger position to the nearest square by
   geometry, so gaps, the frame and `EDGE_SLOP` (12px) past it count as the edge squares
   (`.board::before` extends the board's touch area). Swiping just outside an edge still marks that row/column.

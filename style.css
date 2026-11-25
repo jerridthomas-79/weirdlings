@@ -8,8 +8,9 @@
   /* Sized for iPhone 14 Pro Max (430 x 932) and similar phones:
      as wide as the screen allows, leaving room for header and buttons. */
   /* thick white frame drawn outward around the board (doesn't take tile space) */
-  --frame: 9px;
-  --board-size: min(calc(100vw - 20px - 2 * var(--frame)), calc(100dvh - 300px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 560px);
+  --frame: 6px;
+  /* as wide as the screen allows, leaving ~5px of background each side */
+  --board-size: min(calc(100vw - 10px - 2 * var(--frame)), calc(100dvh - 300px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 560px);
   /* width of the bars above/below the board, lined up with the outside of the frame */
   --ui-w: calc(var(--board-size) + 2 * var(--frame));
 }
@@ -46,7 +47,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: calc(env(safe-area-inset-top) + 8px) 10px calc(env(safe-area-inset-bottom) + 10px);
+  padding: calc(env(safe-area-inset-top) + 8px) 5px calc(env(safe-area-inset-bottom) + 10px);
   gap: 10px;
 }
 
@@ -116,7 +117,7 @@ h1 {
   width: var(--board-size);
   height: var(--board-size);
   display: grid;
-  --gap: max(2px, calc(var(--board-size) / var(--n) * 0.075));
+  --gap: max(2px, calc(var(--board-size) / var(--n) * 0.06));
   gap: var(--gap);
   padding: calc(var(--gap) * 1.6);
   border-radius: calc(var(--gap) * 2 + 14px);
